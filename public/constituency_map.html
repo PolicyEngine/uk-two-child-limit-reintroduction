@@ -300,6 +300,10 @@
         const getCode = f => f.properties.c || f.properties.GSScode || '';
         const getName = f => f.properties.n || f.properties.Name || '';
 
+        // Exclude Scottish constituencies (codes starting with 'S') due to
+        // unreliable constituency weights – see policyengine-uk-data#274
+        geojson.features = geojson.features.filter(f => !getCode(f).startsWith('S'));
+
         // Calculate bounds
         const coords = geojson.features.flatMap(f => {
           const geom = f.geometry;
@@ -414,7 +418,7 @@
         const searchResults = document.getElementById('search-results');
         const constituencies = geojson.features
           .map(f => ({ name: getName(f), code: getCode(f) }))
-          .filter(c => c.name);
+          .filter(c => c.name && !c.code.startsWith('S'));
 
         searchInput.addEventListener('input', () => {
           const query = searchInput.value.toLowerCase();
