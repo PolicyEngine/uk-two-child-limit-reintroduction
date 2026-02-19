@@ -216,7 +216,7 @@ export default function TwoChildLimitDashboard() {
     .map((r) => `${fmtBnLong(r.budgetary_impact_bn)} in ${r.year}`)
     .join(" and ");
   const ineqSummary = inequality
-    ? inequality.map((r) => `${r.gini_change_pct.toFixed(2)}% in ${r.year}`).join(" and ")
+    ? inequality.map((r) => `${r.gini_change_pct.toFixed(1)}% in ${r.year}`).join(" and ")
     : "";
 
   /* ── Render ─────────────────────────────────────────────────── */
@@ -522,7 +522,7 @@ export default function TwoChildLimitDashboard() {
                       }}
                     >
                       {r.gini_change_pct > 0 ? "+" : ""}
-                      {r.gini_change_pct.toFixed(2)}%
+                      {r.gini_change_pct.toFixed(1)}%
                     </td>
                   </tr>
                 ))}
@@ -601,7 +601,7 @@ export default function TwoChildLimitDashboard() {
               {fmtPct(childBhcFirst.reform_rate_pct)}
             </>
           )}
-          {iq0 && <>, and the Gini index would rise by {iq0.gini_change_pct.toFixed(2)}%</>}
+          {iq0 && <>, and the Gini index would rise by {iq0.gini_change_pct.toFixed(1)}%</>}
           .
           {worstDecile && (
             <>
