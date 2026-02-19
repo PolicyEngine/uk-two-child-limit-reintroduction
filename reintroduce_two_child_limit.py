@@ -125,8 +125,12 @@ def calculate_headcounts(baseline, reform):
             "num_children", period=year, map_to="household"
         ).values
         total_children = (hh_weight.values * num_children).sum()
+
+        # Only count children beyond the 2nd in affected households
+        # (the ones who directly lose benefit entitlement)
+        extra_children = np.maximum(0, num_children - 2)
         affected_children = (
-            hh_weight.values[affected] * num_children[affected]
+            hh_weight.values[affected] * extra_children[affected]
         ).sum()
 
         # Average loss per affected household
