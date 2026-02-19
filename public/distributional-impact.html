@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; background: white; }
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      padding: 16px 0 0;
+      flex-wrap: wrap;
+    }
+    .toggle-group {
+      display: flex;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .toggle-btn {
+      padding: 8px 20px;
+      border: none;
+      background: transparent;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: #6B7280;
+      color: white;
+    }
+    .year-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .year-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+    .year-btn {
+      padding: 6px 14px;
+      border: 1px solid #d1d5db;
+      background: transparent;
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6B7280;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .year-btn.active {
+      background: #6B7280;
+      color: white;
+      border-color: #6B7280;
+    }
+    #chart { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="controls" id="controls" style="display:none">
+    <div class="toggle-group">
+      <button class="toggle-btn active" data-mode="relative">Relative (%)</button>
+      <button class="toggle-btn" data-mode="absolute">Absolute (&pound;)</button>
+    </div>
+    <div class="year-group">
+      <span class="year-label">Year:</span>
+    </div>
+  </div>
+  <div id="chart"></div>
+  <script>
+    /* ── Load distributional.csv and build chart ────────────────── */
+    async function init() {
+      const resp = await fetch('/data/distributional.csv');
+      const text = await resp.text();
+      const rows = text.trim().split('\n').slice(1).map(line => {
+        const [year, decile, avg_change_gbp, relative_change_pct] = line.split(',');
+        return {
+          year,
+          decile: parseInt(decile),
+          avg_change_gbp: parseFloat(avg_change_gbp),
+          relative_change_pct: parseFloat(relative_change_pct),
+        };
+      });
+
+      // Discover years from the data
+      const years = [...new Set(rows.map(r => r.year))];
+
+      // Build data structure
+      const data = { relative: {}, absolute: {} };
+      years.forEach(year => {
+        const yearRows = rows.filter(r => r.year === year).sort((a, b) => a.decile - b.decile);
+        data.relative[year] = {
+          y: yearRows.map(r => r.relative_change_pct),
+          text: yearRows.map(r => `${r.relative_change_pct.toFixed(1)}%`),
+        };
+        data.absolute[year] = {
+          y: yearRows.map(r => r.avg_change_gbp),
+          text: yearRows.map(r => {
+            const v = r.avg_change_gbp;
+            return v === 0 ? '\u00a30' : `${v < 0 ? '-' : ''}\u00a3${Math.abs(v).toFixed(0)}`;
+          }),
+        };
+      });
+
+      // Build year buttons dynamically
+      const yearGroup = document.querySelector('.year-group');
+      years.forEach((year, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'year-btn' + (idx === 0 ? ' active' : '');
+        btn.dataset.year = String(idx);
+        btn.textContent = year;
+        yearGroup.appendChild(btn);
+      });
+
+      document.getElementById('controls').style.display = 'flex';
+
+      let currentMode = 'relative';
+      let currentYearIdx = 0;
+
+      function getLayout(mode) {
+        const isRel = mode === 'relative';
+        // Compute axis range from data
+        const allValues = years.flatMap(y => data[mode][y].y);
+        const minVal = Math.min(...allValues);
+        const maxVal = Math.max(...allValues);
+        const padding = (maxVal - minVal) * 0.2 || 0.5;
+        return {
+          xaxis: {
+            title: { text: 'Income decile', font: { family: 'Roboto', size: 14 } },
+            tickfont: { family: 'Roboto', size: 12 },
+            tickmode: 'array',
+            tickvals: Array.from({ length: 10 }, (_, i) => i + 1),
+            showgrid: true,
+            gridcolor: '#e0e0e0',
+          },
+          yaxis: {
+            title: {
+              text: isRel ? 'Relative change in household income (%)' : 'Absolute change in household income (\u00a3/year)',
+              font: { family: 'Roboto', size: 13 },
+            },
+            tickfont: { family: 'Roboto', size: 12 },
+            ticksuffix: isRel ? '%' : '',
+            tickprefix: isRel ? '' : '\u00a3',
+            showgrid: true,
+            gridcolor: '#e0e0e0',
+            range: [minVal - padding, maxVal + padding],
+          },
+          height: 460,
+          margin: { l: 80, r: 30, b: 60, t: 20, pad: 4 },
+          plot_bgcolor: 'white',
+          paper_bgcolor: 'white',
+          font: { family: 'Roboto' },
+        };
+      }
+
+      function getTrace(mode, year) {
+        const d = data[mode][year];
+        return {
+          x: Array.from({ length: d.y.length }, (_, i) => i + 1),
+          y: d.y,
+          type: 'bar',
+          marker: { color: '#6B7280' },
+          hovertemplate: mode === 'relative'
+            ? 'Decile %{x}<br>Change: %{y:.1f}%<extra></extra>'
+            : 'Decile %{x}<br>Change: \u00a3%{y:,.0f}<extra></extra>',
+          text: d.text,
+          textposition: 'outside',
+          textfont: { family: 'Roboto', size: 11 },
+        };
+      }
+
+      function render() {
+        const year = years[currentYearIdx];
+        Plotly.react('chart', [getTrace(currentMode, year)], getLayout(currentMode), {
+          responsive: true,
+          displayModeBar: false,
+        });
+      }
+
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentMode = btn.dataset.mode;
+          render();
+        });
+      });
+
+      document.querySelectorAll('.year-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentYearIdx = parseInt(btn.dataset.year);
+          render();
+        });
+      });
+
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>

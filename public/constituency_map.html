@@ -1,0 +1,492 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>UK Constituency Map - Two-Child Limit Reintroduction Impact</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: white;
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      svg {
+        display: block;
+      }
+      .tooltip {
+        position: fixed;
+        background: white;
+        padding: 10px 14px;
+        border-radius: 6px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        pointer-events: none;
+        opacity: 0;
+        font-size: 13px;
+        z-index: 1001;
+      }
+      .tooltip strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+      .tooltip .value {
+        font-weight: 600;
+      }
+      .loss {
+        color: #6B7280;
+      }
+      .gain {
+        color: #059669;
+      }
+      .zoom-controls {
+        position: absolute;
+        top: 70px;
+        left: 0px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .zoom-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      }
+      .zoom-btn:hover {
+        background: #f0f0f0;
+      }
+      .search-container {
+        position: absolute;
+        top: 10px;
+        left: 0px;
+        z-index: 1000;
+      }
+      .search-input {
+        width: 200px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        outline: none;
+      }
+      .search-input:focus {
+        border-color: #6B7280;
+      }
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ccc;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .search-result-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        border-bottom: 1px solid #eee;
+      }
+      .search-result-item:hover {
+        background: #f5f5f5;
+      }
+      .legend {
+        position: absolute;
+        top: 70px;
+        right: 10px;
+        padding: 5px;
+        font-size: 12px;
+        z-index: 1000;
+      }
+      .legend-bar {
+        width: 120px;
+        height: 12px;
+        border-radius: 2px;
+      }
+      .legend-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #666;
+        margin-top: 4px;
+      }
+      .year-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 1000;
+      }
+      .play-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: #6B7280;
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+      .play-btn:hover {
+        background: #4B5563;
+      }
+      .play-btn.playing {
+        background: #374151;
+      }
+      .year-slider-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .year-slider {
+        width: 200px;
+        height: 6px;
+        -webkit-appearance: none;
+        background: #e5e5e5;
+        border-radius: 3px;
+        outline: none;
+      }
+      .year-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #6B7280;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      .year-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        background: #6B7280;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+      .year-marks {
+        display: flex;
+        justify-content: space-between;
+        width: 200px;
+        font-size: 10px;
+        color: #666;
+        margin-top: 10px;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="year-controls">
+      <button class="play-btn" id="play-btn" title="Play animation">&#9654;</button>
+      <div>
+        <div class="year-slider-container">
+          <input type="range" class="year-slider" id="year-slider" min="0" max="1" value="0" step="1" />
+        </div>
+        <div class="year-marks" id="year-marks"></div>
+      </div>
+    </div>
+    <div class="search-container">
+      <input type="text" class="search-input" id="search-input" placeholder="Search constituency..." autocomplete="off" />
+      <div class="search-results" id="search-results"></div>
+    </div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-in" title="Zoom In">+</button>
+      <button class="zoom-btn" id="zoom-out" title="Zoom Out">&minus;</button>
+      <button class="zoom-btn" id="zoom-reset" title="Reset">&#10226;</button>
+    </div>
+    <div class="legend">
+      <div class="legend-bar" id="legend-bar"></div>
+      <div class="legend-labels">
+        <span id="legend-min"></span>
+        <span id="legend-max"></span>
+      </div>
+    </div>
+    <svg id="map"></svg>
+    <div class="tooltip" id="tooltip"></div>
+    <script>
+      /* ── Load data from CSV + GeoJSON then render the map ───── */
+      async function init() {
+        const [csvText, geojson] = await Promise.all([
+          fetch('/data/constituency.csv').then(r => r.text()),
+          fetch('/data/constituencies.geojson').then(r => r.json()),
+        ]);
+
+        // Parse a CSV line respecting quoted fields (handles commas in names)
+        function parseCSVLine(line) {
+          const cols = [];
+          let cur = '', inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') { inQuotes = !inQuotes; }
+            else if (ch === ',' && !inQuotes) { cols.push(cur); cur = ''; }
+            else { cur += ch; }
+          }
+          cols.push(cur);
+          return cols;
+        }
+
+        // Parse constituency CSV into dataByYear keyed by numeric year
+        const csvRows = csvText.trim().split('\n').slice(1);
+        const dataByYear = {};
+        const yearSet = new Set();
+        csvRows.forEach(line => {
+          const cols = parseCSVLine(line);
+          const yearStr = cols[0];           // e.g. "2029-30"
+          const code = cols[1];
+          const name = cols[2];
+          const avg_change = parseFloat(cols[3]);
+          const numYear = parseInt(yearStr);  // e.g. 2029
+          yearSet.add(numYear);
+          if (!dataByYear[numYear]) dataByYear[numYear] = {};
+          dataByYear[numYear][code] = { name, avg_change };
+        });
+
+        const years = [...yearSet].sort((a, b) => a - b);
+        const yearLabels = {};
+        years.forEach(y => { yearLabels[y] = `${y}-${String(y + 1).slice(-2)}`; });
+
+        // Update slider and year marks
+        const yearSlider = document.getElementById('year-slider');
+        yearSlider.max = String(years.length - 1);
+        const yearMarks = document.getElementById('year-marks');
+        yearMarks.innerHTML = years.map(y => `<span>${yearLabels[y]}</span>`).join('');
+
+        let currentYearIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        const w = window.innerWidth, h = window.innerHeight;
+        const svg = d3.select('#map').attr('width', w).attr('height', h);
+        const g = svg.append('g');
+        const tooltip = d3.select('#tooltip');
+
+        // Global min/max for consistent color scale
+        let globalMin = 0, globalMax = 0;
+        years.forEach(year => {
+          const values = Object.values(dataByYear[year]).map(d => d.avg_change);
+          globalMin = Math.min(globalMin, d3.min(values) || 0);
+          globalMax = Math.max(globalMax, d3.max(values) || 0);
+        });
+
+        const colorScale = d3.scaleLinear().domain([0, -400]).range(['#FEE2E2', '#991B1B']).clamp(true);
+
+        // Legend
+        document.getElementById('legend-bar').style.background = 'linear-gradient(to right, #FEE2E2, #991B1B)';
+        document.getElementById('legend-min').textContent = '\u00a30';
+        document.getElementById('legend-max').textContent = '\u00a3400 loss';
+
+        // GeoJSON property mapping – the external file uses "c" for code, "n" for name
+        const getCode = f => f.properties.c || f.properties.GSScode || '';
+        const getName = f => f.properties.n || f.properties.Name || '';
+
+        // Calculate bounds
+        const coords = geojson.features.flatMap(f => {
+          const geom = f.geometry;
+          if (geom.type === 'Polygon') return geom.coordinates[0];
+          if (geom.type === 'MultiPolygon') return geom.coordinates.flatMap(p => p[0]);
+          return [];
+        });
+        const xMin = d3.min(coords, d => d[0]);
+        const xMax = d3.max(coords, d => d[0]);
+        const yMin = d3.min(coords, d => d[1]);
+        const yMax = d3.max(coords, d => d[1]);
+
+        const s = Math.min((w - 40) / (xMax - xMin), (h - 40) / (yMax - yMin));
+        const ox = (w - (xMax - xMin) * s) / 2 - 100;
+        const oy = (h - (yMax - yMin) * s) / 2 + 100;
+
+        const proj = d3.geoTransform({
+          point: function (x, y) {
+            this.stream.point((x - xMin) * s + ox, h - ((y - yMin) * s + oy));
+          },
+        });
+        const path = d3.geoPath().projection(proj);
+
+        // Draw
+        const paths = g
+          .selectAll('path')
+          .data(geojson.features)
+          .enter()
+          .append('path')
+          .attr('d', path)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 0.3)
+          .on('mouseover', function (event, d) {
+            const code = getCode(d);
+            const name = getName(d);
+            const year = years[currentYearIndex];
+            const info = dataByYear[year][code];
+
+            d3.select(this).attr('stroke', '#000').attr('stroke-width', 1.5);
+
+            if (info && info.avg_change !== 0) {
+              const absVal = Math.abs(info.avg_change).toFixed(0);
+              const cssClass = info.avg_change < 0 ? 'loss' : 'gain';
+              const label = info.avg_change < 0 ? 'loss' : 'gain';
+              tooltip.html(`
+                <strong>${name}</strong>
+                <div>Year: <span class="value">${yearLabels[year]}</span></div>
+                <div>Average ${label}: <span class="value ${cssClass}">\u00a3${absVal}</span></div>
+              `);
+            } else {
+              tooltip.html(`<strong>${name}</strong><div>No data for ${yearLabels[year]}</div>`);
+            }
+
+            tooltip.style('opacity', 1)
+              .style('left', event.clientX + 15 + 'px')
+              .style('top', event.clientY - 10 + 'px');
+          })
+          .on('mouseout', function () {
+            d3.select(this).attr('stroke', '#fff').attr('stroke-width', 0.3);
+            tooltip.style('opacity', 0);
+          });
+
+        function updateMap(yearIndex) {
+          const year = years[yearIndex];
+          const data = dataByYear[year];
+          paths.transition().duration(300).attr('fill', d => {
+            const code = getCode(d);
+            const info = data[code];
+            if (info && info.avg_change !== 0) return colorScale(info.avg_change);
+            return '#e5e5e5';
+          });
+          yearSlider.value = yearIndex;
+        }
+
+        updateMap(0);
+
+        // Year slider
+        yearSlider.addEventListener('input', () => {
+          currentYearIndex = parseInt(yearSlider.value);
+          updateMap(currentYearIndex);
+        });
+
+        // Play button
+        const playBtn = document.getElementById('play-btn');
+        function stopPlaying() {
+          if (playInterval) { clearInterval(playInterval); playInterval = null; }
+          playBtn.innerHTML = '&#9654;';
+          playBtn.classList.remove('playing');
+          isPlaying = false;
+        }
+        playBtn.addEventListener('click', () => {
+          if (isPlaying) { stopPlaying(); return; }
+          if (currentYearIndex >= years.length - 1) { currentYearIndex = 0; updateMap(0); }
+          isPlaying = true;
+          playBtn.innerHTML = '&#10074;&#10074;';
+          playBtn.classList.add('playing');
+          playInterval = setInterval(() => {
+            if (currentYearIndex < years.length - 1) { currentYearIndex++; updateMap(currentYearIndex); }
+            if (currentYearIndex >= years.length - 1) stopPlaying();
+          }, 1500);
+        });
+
+        // Zoom
+        const zoom = d3.zoom().scaleExtent([0.5, 10]).on('zoom', e => g.attr('transform', e.transform));
+        svg.call(zoom);
+        d3.select('#zoom-in').on('click', () => svg.transition().call(zoom.scaleBy, 1.5));
+        d3.select('#zoom-out').on('click', () => svg.transition().call(zoom.scaleBy, 0.67));
+        d3.select('#zoom-reset').on('click', () => svg.transition().call(zoom.transform, d3.zoomIdentity));
+
+        // Search
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const constituencies = geojson.features
+          .map(f => ({ name: getName(f), code: getCode(f) }))
+          .filter(c => c.name);
+
+        searchInput.addEventListener('input', () => {
+          const query = searchInput.value.toLowerCase();
+          if (query.length < 2) { searchResults.style.display = 'none'; return; }
+
+          const matches = constituencies.filter(c => c.name.toLowerCase().includes(query)).slice(0, 10);
+          if (matches.length > 0) {
+            const year = years[currentYearIndex];
+            searchResults.innerHTML = matches.map(c => {
+              const info = dataByYear[year][c.code];
+              let changeText = 'No data';
+              if (info && info.avg_change !== 0) {
+                const absVal = Math.abs(info.avg_change).toFixed(0);
+                changeText = info.avg_change < 0 ? `\u00a3${absVal} loss` : `\u00a3${absVal} gain`;
+              }
+              const cssClass = info && info.avg_change < 0 ? 'loss' : 'gain';
+              return `<div class="search-result-item" data-code="${c.code}">${c.name} <small class="${cssClass}">${changeText}</small></div>`;
+            }).join('');
+            searchResults.style.display = 'block';
+          } else {
+            searchResults.style.display = 'none';
+          }
+        });
+
+        searchResults.addEventListener('click', e => {
+          if (!e.target.classList.contains('search-result-item')) return;
+          const code = e.target.dataset.code;
+          const feature = geojson.features.find(f => getCode(f) === code);
+          if (!feature) return;
+
+          const bounds = path.bounds(feature);
+          const dx = bounds[1][0] - bounds[0][0];
+          const dy = bounds[1][1] - bounds[0][1];
+          const x = (bounds[0][0] + bounds[1][0]) / 2;
+          const y = (bounds[0][1] + bounds[1][1]) / 2;
+          const scale = Math.min(8, 0.9 / Math.max(dx / w, dy / h));
+          const translate = [w / 2 - scale * x, h / 2 - scale * y];
+
+          svg.transition().duration(750)
+            .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale))
+            .on('end', () => {
+              const year = years[currentYearIndex];
+              const info = dataByYear[year][code];
+              const name = getName(feature);
+
+              paths
+                .attr('stroke', d => getCode(d) === code ? '#000' : '#fff')
+                .attr('stroke-width', d => getCode(d) === code ? 2 : 0.3);
+
+              if (info && info.avg_change !== 0) {
+                const absVal = Math.abs(info.avg_change).toFixed(0);
+                const cssClass = info.avg_change < 0 ? 'loss' : 'gain';
+                const label = info.avg_change < 0 ? 'loss' : 'gain';
+                tooltip.html(`
+                  <strong>${name}</strong>
+                  <div>Year: <span class="value">${yearLabels[year]}</span></div>
+                  <div>Average ${label}: <span class="value ${cssClass}">\u00a3${absVal}</span></div>
+                `);
+              } else {
+                tooltip.html(`<strong>${name}</strong><div>No data for ${yearLabels[year]}</div>`);
+              }
+              tooltip.style('opacity', 1)
+                .style('left', w / 2 + 50 + 'px')
+                .style('top', h / 2 - 30 + 'px');
+            });
+
+          searchResults.style.display = 'none';
+          searchInput.value = e.target.textContent.split(' \u00a3')[0].trim();
+        });
+      }
+
+      init();
+    </script>
+  </body>
+</html>
