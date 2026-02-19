@@ -307,6 +307,9 @@ export default function TwoChildLimitDashboard() {
             The reform would affect {fmtCountLong(h0.affected_households)}{" "}
             households and {fmtCountLong(h0.affected_children)} children (
             {fmtPct(h0.pct_children_affected)} of all children) in {h0.year}.
+            Affected children are those beyond the second child in each
+            household — the ones who directly lose benefit entitlement under
+            the cap.
           </p>
           <p className="table-caption">
             Table 2: Affected households and children
@@ -586,8 +589,8 @@ export default function TwoChildLimitDashboard() {
           {h0 && (
             <>
               , affecting {fmtCountLong(h0.affected_households)} households and{" "}
-              {fmtCountLong(h0.affected_children)} children (
-              {fmtPct(h0.pct_children_affected)} of all children)
+              {fmtCountLong(h0.affected_children)} children beyond the second
+              child ({fmtPct(h0.pct_children_affected)} of all children)
             </>
           )}
           .
