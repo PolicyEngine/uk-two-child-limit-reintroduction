@@ -577,9 +577,9 @@ export default function TwoChildLimitDashboard() {
               rel="noopener noreferrer"
             >
               Scottish Child Payment
-            </a>{" "}
-            — paid for every eligible child with no two-child limit —
-            genuinely reduces the impact of the cap for Scottish families.
+            </a>
+            , paid for every eligible child with no two-child limit,
+            reduces the impact of the cap for Scottish families.
           </p>
         )}
       </section>
