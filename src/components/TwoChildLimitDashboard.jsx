@@ -54,14 +54,12 @@ function fmtBnLong(v) {
 
 function fmtCount(v) {
   const abs = Math.abs(v);
-  if (abs >= 1e6) return `${(abs / 1e6).toFixed(1)}m`;
-  return `${Math.round(abs / 1e3)}k`;
+  return `${(abs / 1e6).toFixed(1)}m`;
 }
 
 function fmtCountLong(v) {
   const abs = Math.abs(v);
-  if (abs >= 1e6) return `${(abs / 1e6).toFixed(1)} million`;
-  return `${Math.round(abs / 1e3)} thousand`;
+  return `${(abs / 1e6).toFixed(1)} million`;
 }
 
 function fmtPct(v) {
