@@ -569,7 +569,17 @@ export default function TwoChildLimitDashboard() {
               if (i === topConst.length - 1) return `and ${part}`;
               return `${part}, `;
             })}
-            .
+            . Scottish constituencies show smaller impacts because
+            the{" "}
+            <a
+              href="https://www.socialsecurity.gov.scot/scottish-child-payment"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Scottish Child Payment
+            </a>{" "}
+            — paid for every eligible child with no two-child limit —
+            genuinely reduces the impact of the cap for Scottish families.
           </p>
         )}
       </section>
