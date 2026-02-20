@@ -11,6 +11,12 @@ th{font-weight:600;color:#333}
 tr:nth-child(even){background:#f9fafb}
 .caption{font-weight:600;margin-top:16px;margin-bottom:4px}
 p{margin:8px 0}
+.toggle-group{display:flex;justify-content:center;gap:4px;margin-bottom:8px}
+.toggle-btn{padding:6px 16px;font-size:.85rem;font-weight:500;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;transition:all .15s ease}
+.toggle-btn:first-child{border-radius:6px 0 0 6px}
+.toggle-btn:last-child{border-radius:0 6px 6px 0}
+.toggle-btn:hover{background:#f1f5f9}
+.toggle-btn.active{background:#2C6496;border-color:#2C6496;color:#fff}
 </style>
 </head>
 <body>
@@ -21,28 +27,40 @@ fetch('./data/poverty.csv')
 .then(csv=>{
   const rows=csv.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],measure:c[1],group:c[2],baseline:parseFloat(c[3]),reform:parseFloat(c[4]),change:parseFloat(c[5])}});
   const fmt=v=>v.toFixed(1);
-  const children=rows.filter(r=>r.group==='Children');
-  const all=rows.filter(r=>r.group==='All');
+  const years=[...new Set(rows.map(r=>r.year))];
+  let selYear=years[0], selType='Absolute';
 
-  let html=`<p>Restoring the two-child limit would increase absolute poverty rates, with the largest effect on children. We measure poverty both before housing costs (BHC) and after housing costs (AHC).</p>`;
+  function render(){
+    const filtered=rows.filter(r=>r.year===selYear&&r.measure.startsWith(selType));
+    const children=filtered.filter(r=>r.group==='Children');
+    const all=filtered.filter(r=>r.group==='All');
+    const label=selType.toLowerCase();
 
-  html+=`<p class="caption">Table 3: Change in absolute child poverty rates</p>`;
-  html+=`<table><tr><th>Year</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
-  children.forEach(r=>{
-    const m=r.measure.includes('BHC')?'BHC':'AHC';
-    html+=`<tr><td>${r.year}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
-  });
-  html+=`</table>`;
+    let html=`<p>Restoring the two-child limit would increase poverty rates, with the largest effect on children. We measure poverty both before housing costs (BHC) and after housing costs (AHC).</p>`;
 
-  html+=`<p class="caption">Table 4: Change in absolute poverty rates (all people)</p>`;
-  html+=`<table><tr><th>Year</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
-  all.forEach(r=>{
-    const m=r.measure.includes('BHC')?'BHC':'AHC';
-    html+=`<tr><td>${r.year}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
-  });
-  html+=`</table>`;
+    html+=`<div class="toggle-group">`;
+    years.forEach(y=>{html+=`<button class="toggle-btn${y===selYear?' active':''}" data-year="${y}">${y}</button>`});
+    html+=`</div><div class="toggle-group">`;
+    ['Absolute','Relative'].forEach(t=>{html+=`<button class="toggle-btn${t===selType?' active':''}" data-type="${t}">${t}</button>`});
+    html+=`</div>`;
 
-  document.getElementById('content').innerHTML=html;
+    function makeTable(title,data){
+      html+=`<p class="caption">${title}</p>`;
+      html+=`<table><tr><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
+      data.forEach(r=>{
+        const m=r.measure.replace(selType+' ','');
+        html+=`<tr><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
+      });
+      html+=`</table>`;
+    }
+    makeTable(`Change in ${label} poverty rates (children)`,children);
+    makeTable(`Change in ${label} poverty rates (all people)`,all);
+
+    document.getElementById('content').innerHTML=html;
+    document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{selYear=b.dataset.year;render()});
+    document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{selType=b.dataset.type;render()});
+  }
+  render();
 });
 </script>
 </body>

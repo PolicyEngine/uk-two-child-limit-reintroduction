@@ -170,14 +170,14 @@ export default function TwoChildLimitDashboard() {
   const h0 = headcounts?.[0];
   const iq0 = inequality?.[0];
 
-  // Poverty grouped by demographic
-  const childPov = poverty?.filter((r) => r.group === "Children") || [];
-  const allPov = poverty?.filter((r) => r.group === "All") || [];
+  // Poverty toggle state
+  const [povYear, setPovYear] = useState(firstYear);
+  const [povType, setPovType] = useState("Absolute");
 
-  // First-year child poverty rows
-  const childBhcFirst = childPov.find((r) => r.year === firstYear && r.measure === "Absolute BHC");
-  const childAhcFirst = childPov.find((r) => r.year === firstYear && r.measure === "Absolute AHC");
-  const childAhcLast = childPov.find((r) => r.year === lastYear && r.measure === "Absolute AHC");
+  // First-year child poverty rows (for narrative text)
+  const childBhcFirst = poverty?.find((r) => r.year === firstYear && r.measure === "Absolute BHC" && r.group === "Children");
+  const childAhcFirst = poverty?.find((r) => r.year === firstYear && r.measure === "Absolute AHC" && r.group === "Children");
+  const childAhcLast = poverty?.find((r) => r.year === lastYear && r.measure === "Absolute AHC" && r.group === "Children");
 
   // Distributional: hardest-hit decile for first year
   const firstYearDist = distributional?.filter((r) => r.year === firstYear) || [];
@@ -395,82 +395,79 @@ export default function TwoChildLimitDashboard() {
         >
           <h2>Poverty impact</h2>
           <p>
-            Restoring the two-child limit would increase absolute poverty rates,
+            Restoring the two-child limit would increase poverty rates,
             with the largest effect on children. We measure poverty both before
             housing costs (BHC) and after housing costs (AHC).
           </p>
 
-          <p className="table-caption">
-            Table 3: Change in absolute child poverty rates
-          </p>
-          <div className="data-table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Measure</th>
-                  <th>Baseline</th>
-                  <th>Reform</th>
-                  <th>Change (pp)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {childPov.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.year}</td>
-                    <td>{r.measure.replace("Absolute ", "")}</td>
-                    <td>{fmtPct(r.baseline_rate_pct)}</td>
-                    <td>{fmtPct(r.reform_rate_pct)}</td>
-                    <td
-                      style={{
-                        color: r.change_pp > 0 ? COLORS.negative : undefined,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {r.change_pp > 0 ? "+" : ""}
-                      {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="chart-toggle">
+            {years.map((y) => (
+              <button
+                key={y}
+                className={`toggle-btn${povYear === y ? " active" : ""}`}
+                onClick={() => setPovYear(y)}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+          <div className="chart-toggle">
+            {["Absolute", "Relative"].map((t) => (
+              <button
+                key={t}
+                className={`toggle-btn${povType === t ? " active" : ""}`}
+                onClick={() => setPovType(t)}
+              >
+                {t}
+              </button>
+            ))}
           </div>
 
-          <p className="table-caption">
-            Table 4: Change in absolute poverty rates (all people)
-          </p>
-          <div className="data-table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Measure</th>
-                  <th>Baseline</th>
-                  <th>Reform</th>
-                  <th>Change (pp)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allPov.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.year}</td>
-                    <td>{r.measure.replace("Absolute ", "")}</td>
-                    <td>{fmtPct(r.baseline_rate_pct)}</td>
-                    <td>{fmtPct(r.reform_rate_pct)}</td>
-                    <td
-                      style={{
-                        color: r.change_pp > 0 ? COLORS.negative : undefined,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {r.change_pp > 0 ? "+" : ""}
-                      {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {["Children", "All"].map((group) => {
+            const rows = poverty.filter(
+              (r) =>
+                r.year === povYear &&
+                r.group === group &&
+                r.measure.startsWith(povType)
+            );
+            return (
+              <div key={group}>
+                <p className="table-caption">
+                  Change in {povType.toLowerCase()} poverty rates ({group === "Children" ? "children" : "all people"})
+                </p>
+                <div className="data-table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Measure</th>
+                        <th>Baseline</th>
+                        <th>Reform</th>
+                        <th>Change (pp)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r, i) => (
+                        <tr key={i}>
+                          <td>{r.measure.replace(`${povType} `, "")}</td>
+                          <td>{fmtPct(r.baseline_rate_pct)}</td>
+                          <td>{fmtPct(r.reform_rate_pct)}</td>
+                          <td
+                            style={{
+                              color: r.change_pp > 0 ? COLORS.negative : undefined,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {r.change_pp > 0 ? "+" : ""}
+                            {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
 
           {childBhcFirst && (
             <p>
