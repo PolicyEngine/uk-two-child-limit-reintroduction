@@ -46,7 +46,7 @@ fetch('./data/poverty.csv')
     ['Absolute','Relative'].forEach(t=>{html+=`<button class="toggle-btn${t===selType?' active':''}" data-type="${t}">${t}</button>`});
     html+=`</div></div>`;
 
-    html+=`<p class="caption">Table 1: Change in poverty rates</p>`;
+    html+=`<p class="caption">Table 2: Change in poverty rates</p>`;
     html+=`<table><tr><th>Group</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th><th>Moved into poverty</th></tr>`;
     filtered.forEach(r=>{
       const group=r.group==='Children'?'Children':'All people';
