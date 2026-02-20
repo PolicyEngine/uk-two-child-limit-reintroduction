@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
+th{font-weight:600;color:#333}
+tr:nth-child(even){background:#f9fafb}
+.caption{font-weight:600;margin-bottom:4px}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/poverty.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const rows=csv.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],measure:c[1],group:c[2],baseline:parseFloat(c[3]),reform:parseFloat(c[4]),change:parseFloat(c[5])}});
+  const fmt=v=>v.toFixed(1);
+  const children=rows.filter(r=>r.group==='Children');
+  const all=rows.filter(r=>r.group==='All');
+
+  let html=`<p>Restoring the two-child limit would increase absolute poverty rates, with the largest effect on children. We measure poverty both before housing costs (BHC) and after housing costs (AHC).</p>`;
+
+  html+=`<p class="caption">Table 3: Change in absolute child poverty rates</p>`;
+  html+=`<table><tr><th>Year</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
+  children.forEach(r=>{
+    const m=r.measure.includes('BHC')?'BHC':'AHC';
+    html+=`<tr><td>${r.year}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
+  });
+  html+=`</table>`;
+
+  html+=`<p class="caption">Table 4: Change in absolute poverty rates (all people)</p>`;
+  html+=`<table><tr><th>Year</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
+  all.forEach(r=>{
+    const m=r.measure.includes('BHC')?'BHC':'AHC';
+    html+=`<tr><td>${r.year}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
+  });
+  html+=`</table>`;
+
+  const bhc2029=children.find(r=>r.year==='2029-30'&&r.measure.includes('BHC'));
+  const ahc2029=children.find(r=>r.year==='2029-30'&&r.measure.includes('AHC'));
+  const ahc2030=children.find(r=>r.year==='2030-31'&&r.measure.includes('AHC'));
+  html+=`<p>In 2029-30, absolute child poverty (BHC) would increase by ${fmt(bhc2029.change)} percentage points, from ${fmt(bhc2029.baseline)}% to ${fmt(bhc2029.reform)}%. After housing costs, child poverty would increase by ${fmt(ahc2029.change)} percentage points, from ${fmt(ahc2029.baseline)}% to ${fmt(ahc2029.reform)}%. By 2030-31, the after housing costs child poverty increase grows to ${fmt(ahc2030.change)} percentage points.</p>`;
+
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

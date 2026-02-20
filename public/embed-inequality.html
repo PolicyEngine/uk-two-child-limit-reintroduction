@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
+th{font-weight:600;color:#333}
+tr:nth-child(even){background:#f9fafb}
+.caption{font-weight:600;margin-bottom:4px}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/inequality.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const rows=csv.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],change:parseFloat(c[3])}});
+  const r0=rows[0],r1=rows[1];
+  const fmt=v=>v.toFixed(1);
+
+  let html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${fmt(r1.change)}% in ${r1.year}.</p>`;
+  html+=`<p class="caption">Table 5: Change in Gini index</p>`;
+  html+=`<table><tr><th>Year</th><th>Change</th></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>+${fmt(r.change)}%</td></tr>`});
+  html+=`</table>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

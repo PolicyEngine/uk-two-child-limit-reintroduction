@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+Promise.all([
+  fetch('./data/budgetary.csv').then(r=>r.text()),
+  fetch('./data/headcounts.csv').then(r=>r.text()),
+  fetch('./data/poverty.csv').then(r=>r.text()),
+  fetch('./data/inequality.csv').then(r=>r.text()),
+  fetch('./data/distributional.csv').then(r=>r.text()),
+  fetch('./data/constituency.csv').then(r=>r.text()),
+]).then(([budgetCSV,headCSV,povCSV,ineqCSV,distCSV,constCSV])=>{
+  const fmt=v=>v.toFixed(1);
+  const fmtM=v=>(v/1e6).toFixed(1);
+
+  const bRows=budgetCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],val:parseFloat(c[1])}});
+  const hRows=headCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],hh:parseFloat(c[2]),ch:parseFloat(c[6]),pct:parseFloat(c[9])}});
+  const pRows=povCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],measure:c[1],group:c[2],baseline:parseFloat(c[3]),reform:parseFloat(c[4]),change:parseFloat(c[5])}});
+  const iRows=ineqCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],change:parseFloat(c[3])}});
+  const dRows=distCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],decile:parseInt(c[1]),avg:parseFloat(c[2]),rel:parseFloat(c[3])}});
+
+  const b0=bRows[0],h0=hRows[0];
+  const bhc2029=pRows.find(r=>r.year==='2029-30'&&r.measure.includes('BHC')&&r.group==='Children');
+  const ineq0=iRows[0];
+  const d2029=dRows.filter(r=>r.year==='2029-30');
+  const maxD=d2029.reduce((a,b)=>Math.abs(b.rel)>Math.abs(a.rel)?b:a);
+  const affectedDeciles=d2029.filter(r=>r.avg<-0.5).length;
+
+  function parseConstCSV(csv){
+    return csv.trim().split('\n').slice(1).map(l=>{
+      const c=[];let cur='',inQ=false;
+      for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){c.push(cur);cur=''}else cur+=ch}
+      c.push(cur);
+      return{year:c[0],name:c[2],avg:parseFloat(c[3])};
+    });
+  }
+  const cRows=parseConstCSV(constCSV).filter(r=>r.year==='2029-30').sort((a,b)=>a.avg-b.avg);
+  const top3=cRows.slice(0,3).map(r=>r.name);
+  const top3Str=top3.slice(0,-1).join(', ')+', and '+top3[top3.length-1];
+  const ordinals=['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth'];
+
+  const html=`<p>PolicyEngine estimates that restoring the two-child benefit cap would save the government £${fmt(b0.val)} billion in ${b0.year}, affecting ${fmtM(h0.hh)} million households and ${fmtM(h0.ch)} million children beyond the second child (${fmt(h0.pct)}% of all children). Absolute child poverty (BHC) would increase by ${fmt(bhc2029.change)} percentage points, from ${fmt(bhc2029.baseline)}% to ${fmt(bhc2029.reform)}%, and the Gini index would rise by ${fmt(ineq0.change)}%. The reform would reduce incomes for the lowest ${affectedDeciles} income deciles, with the ${ordinals[maxD.decile-1]} decile losing ${Math.abs(maxD.rel).toFixed(1)}% of household income on average. ${top3Str} would be the most affected constituencies.</p>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

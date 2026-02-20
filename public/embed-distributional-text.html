@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/distributional.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const rows=csv.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],decile:parseInt(c[1]),avg:parseFloat(c[2]),rel:parseFloat(c[3])}});
+  const y2029=rows.filter(r=>r.year==='2029-30');
+  const y2030=rows.filter(r=>r.year==='2030-31');
+  const maxDecile2029=y2029.reduce((a,b)=>Math.abs(b.rel)>Math.abs(a.rel)?b:a);
+  const maxDecile2030=y2030.find(r=>r.decile===maxDecile2029.decile);
+  const ordinals=['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth'];
+  const ord=ordinals[maxDecile2029.decile-1];
+  const noChange2029=y2029.filter(r=>r.avg===0).map(r=>r.decile);
+  const noChangeStr=noChange2029.length>0?`deciles ${noChange2029.join(' to ')}`:'none';
+
+  let html=`<p>By income decile, restoring the two-child limit would cause the largest income losses for the ${ord} decile. In relative terms, the ${ord} decile loses ${Math.abs(maxDecile2029.rel).toFixed(1)}% of household income in ${maxDecile2029.year}. In absolute terms, this amounts to £${Math.abs(maxDecile2029.avg).toFixed(0)} per year. Figure 1 shows both relative and absolute changes by decile, with a toggle to switch between views and year buttons to compare 2029-30 and 2030-31.</p>`;
+  html+=`<p>The losses decline for higher deciles, with ${noChangeStr} seeing no change. By 2030-31, the ${ord} decile's loss changes to £${Math.abs(maxDecile2030.avg).toFixed(0)} per year.</p>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/constituency.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const rows=csv.trim().split('\n').slice(1).map(l=>{
+    const c=[];let cur='',inQ=false;
+    for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){c.push(cur);cur=''}else cur+=ch}
+    c.push(cur);
+    return{year:c[0],name:c[2],avg:parseFloat(c[3])};
+  });
+  const y2029=rows.filter(r=>r.year==='2029-30').sort((a,b)=>a.avg-b.avg);
+  const top5=y2029.slice(0,5);
+  const list=top5.map(r=>`${r.name} (£${Math.abs(r.avg).toFixed(0)})`);
+  const listStr=list.slice(0,-1).join(', ')+', and '+list[list.length-1];
+
+  let html=`<p>In 2029-30, the constituencies experiencing the largest average income losses include ${listStr}. The map covers parliamentary constituencies across the United Kingdom.</p>`;
+  html+=`<p>Note on Scotland: The Scottish Government introduced the Two Child Limit Payment in December 2024 through Social Security Scotland, which compensates affected families for the full value of the UC child element. Following the UK-wide abolition of the two-child limit in April 2026, the Scottish Government stated the payment "is no longer needed". This analysis assumes the Scottish Two Child Limit Payment would not be reintroduced alongside a restored two-child limit.</p>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

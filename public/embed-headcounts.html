@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
+th{font-weight:600;color:#333}
+tr:nth-child(even){background:#f9fafb}
+.caption{font-weight:600;margin-bottom:4px}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/headcounts.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const lines=csv.trim().split('\n');
+  const headers=lines[0].split(',');
+  const rows=lines.slice(1).map(l=>{const c=l.split(',');return{year:c[0],affected_hh:parseFloat(c[2]),affected_ch:parseFloat(c[6]),pct_ch:parseFloat(c[9])}});
+  const r0=rows[0];
+  const fmtM=v=>(v/1e6).toFixed(1);
+  const fmtPct=v=>v.toFixed(1);
+  let html=`<p>The reform would affect ${fmtM(r0.affected_hh)} million households and ${fmtM(r0.affected_ch)} million children (${fmtPct(r0.pct_ch)}% of all children) in ${r0.year}. Affected children are those beyond the second child in each household — the ones who directly lose benefit entitlement under the cap.</p>`;
+  html+=`<p class="caption">Table 2: Affected households and children</p>`;
+  html+=`<table><tr><th>Year</th><th>Affected households</th><th>Affected children</th><th>Share of all children (%)</th></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>${fmtM(r.affected_hh)}m</td><td>${fmtM(r.affected_ch)}m</td><td>${fmtPct(r.pct_ch)}%</td></tr>`});
+  html+=`</table>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>

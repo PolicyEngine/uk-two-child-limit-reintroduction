@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;line-height:1.7;padding:8px 0}
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
+th{font-weight:600;color:#333}
+tr:nth-child(even){background:#f9fafb}
+.caption{font-weight:600;margin-bottom:4px}
+p{margin:8px 0}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<script>
+fetch('./data/budgetary.csv')
+.then(r=>r.text())
+.then(csv=>{
+  const rows=csv.trim().split('\n').slice(1).map(l=>{const[y,v]=l.split(',');return{year:y,val:parseFloat(v)}});
+  const r0=rows[0],r1=rows[1];
+  let html=`<p>PolicyEngine estimates that restoring the two-child limit would save the government £${r0.val.toFixed(1)} billion in ${r0.year} and £${r1.val.toFixed(1)} billion in ${r1.year}.</p>`;
+  html+=`<p class="caption">Table 1: Budgetary impact</p>`;
+  html+=`<table><tr><th>Year</th><th>Government savings</th></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>£${r.val.toFixed(1)}bn</td></tr>`});
+  html+=`</table>`;
+  document.getElementById('content').innerHTML=html;
+});
+</script>
+</body>
+</html>
