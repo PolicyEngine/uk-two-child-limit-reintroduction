@@ -289,20 +289,16 @@
           globalMax = Math.max(globalMax, d3.max(values) || 0);
         });
 
-        const colorScale = d3.scaleLinear().domain([0, -400]).range(['#FEE2E2', '#991B1B']).clamp(true);
+        const colorScale = d3.scaleLinear().domain([0, -300]).range(['#FEE2E2', '#991B1B']).clamp(true);
 
         // Legend
         document.getElementById('legend-bar').style.background = 'linear-gradient(to right, #FEE2E2, #991B1B)';
         document.getElementById('legend-min').textContent = '\u00a30';
-        document.getElementById('legend-max').textContent = '\u00a3400 loss';
+        document.getElementById('legend-max').textContent = '\u00a3300 loss';
 
         // GeoJSON property mapping – the external file uses "c" for code, "n" for name
         const getCode = f => f.properties.c || f.properties.GSScode || '';
         const getName = f => f.properties.n || f.properties.Name || '';
-
-        // Exclude Scottish constituencies (codes starting with 'S') due to
-        // unreliable constituency weights – see policyengine-uk-data#274
-        geojson.features = geojson.features.filter(f => !getCode(f).startsWith('S'));
 
         // Calculate bounds
         const coords = geojson.features.flatMap(f => {
@@ -418,7 +414,7 @@
         const searchResults = document.getElementById('search-results');
         const constituencies = geojson.features
           .map(f => ({ name: getName(f), code: getCode(f) }))
-          .filter(c => c.name && !c.code.startsWith('S'));
+          .filter(c => c.name);
 
         searchInput.addEventListener('input', () => {
           const query = searchInput.value.toLowerCase();

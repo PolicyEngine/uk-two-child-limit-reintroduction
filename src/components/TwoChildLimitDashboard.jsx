@@ -569,10 +569,28 @@ export default function TwoChildLimitDashboard() {
               if (i === topConst.length - 1) return `and ${part}`;
               return `${part}, `;
             })}
-            . The map covers parliamentary constituencies across England,
-            Wales, and Northern Ireland.
+            . The map covers parliamentary constituencies across the
+            United Kingdom.
           </p>
         )}
+
+        <p className="methodology-note">
+          <strong>Note on Scotland:</strong> The Scottish Government introduced
+          the{" "}
+          <a
+            href="https://www.gov.scot/policies/social-security/two-child-limit-payment/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Two Child Limit Payment
+          </a>{" "}
+          in December 2024 through Social Security Scotland, which compensates
+          affected families for the full value of the UC child element. Following
+          the UK-wide abolition of the two-child limit in April 2026, the
+          Scottish Government stated the payment "is no longer needed". This
+          analysis assumes the Scottish Two Child Limit Payment would not be
+          reintroduced alongside a restored two-child limit.
+        </p>
       </section>
 
       {/* ── Conclusion ─────────────────────────────────────────── */}

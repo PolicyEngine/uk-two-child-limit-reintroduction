@@ -49,6 +49,9 @@ def create_simulations():
     baseline = Microsimulation()
 
     # Reform: reintroduce two-child limit from 2029
+    # Also turn off the Scottish Two Child Limit Payment, since the Scottish
+    # Government said it "is no longer needed" after the UK-wide abolition.
+    # If the two-child limit is reintroduced, we assume the TCLP stays off.
     reform = Microsimulation(
         reform={
             "gov.dwp.universal_credit.elements.child.limit.child_count": {
@@ -58,6 +61,10 @@ def create_simulations():
             "gov.dwp.tax_credits.child_tax_credit.limit.child_count": {
                 "2029-01-01": 2,
                 "2030-01-01": 2,
+            },
+            "gov.social_security_scotland.two_child_limit_payment.in_effect": {
+                "2029-01-01": False,
+                "2030-01-01": False,
             },
         }
     )
