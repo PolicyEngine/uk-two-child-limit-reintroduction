@@ -558,8 +558,8 @@ export default function TwoChildLimitDashboard() {
 
         {topConst.length > 0 && (
           <p>
-            The constituencies experiencing the largest average income losses
-            include{" "}
+            In {firstYear}, the constituencies experiencing the largest average
+            income losses include{" "}
             {topConst.map((c, i) => {
               const part = `${c.constituency_name} (${fmtGbp(c.avg_change_gbp)})`;
               if (topConst.length === 1) return part;
