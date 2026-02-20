@@ -20,7 +20,6 @@ Usage:
     python scripts/reintroduce_two_child_limit.py
 """
 
-import sys
 from pathlib import Path
 
 import h5py
@@ -102,52 +101,43 @@ def calculate_headcounts(baseline, reform):
     for year in YEARS:
         fiscal_year = f"{year}-{str(year + 1)[-2:]}"
 
-        # Household level
+        # sim.calculate() returns MicroSeries with weights - no manual weight handling
         baseline_income = baseline.calculate(
             "household_net_income", period=year, map_to="household"
         )
         reform_income = reform.calculate(
             "household_net_income", period=year, map_to="household"
         )
-        hh_weight = baseline.calculate(
-            "household_weight", period=year, map_to="household"
-        )
         hh_count_people = baseline.calculate(
             "household_count_people", period=year, map_to="household"
         )
 
+        # MicroSeries subtraction preserves weights
         income_change = reform_income - baseline_income
-        affected = np.abs(income_change.values) > 1  # more than £1/yr
+        affected = np.abs(np.array(income_change)) > 1  # more than £1/yr
 
-        total_households = hh_weight.values.sum()
-        affected_households = hh_weight.values[affected].sum()
+        total_households = income_change.count()
+        affected_households = income_change[affected].count()
 
-        total_people = (hh_weight.values * hh_count_people.values).sum()
-        affected_people = (
-            hh_weight.values[affected] * hh_count_people.values[affected]
-        ).sum()
+        total_people = hh_count_people.sum()
+        affected_people = hh_count_people[affected].sum()
 
         # Children in affected households
         num_children = baseline.calculate(
             "num_children", period=year, map_to="household"
-        ).values
-        total_children = (hh_weight.values * num_children).sum()
+        )
+        total_children = num_children.sum()
 
         # Only count children beyond the 2nd in affected households
         # (the ones who directly lose benefit entitlement)
-        extra_children = np.maximum(0, num_children - 2)
-        affected_children = (
-            hh_weight.values[affected] * extra_children[affected]
-        ).sum()
+        extra_children = np.maximum(0, np.array(num_children) - 2)
+        extra_ms = MicroSeries(extra_children, weights=income_change.weights.values)
+        affected_children = extra_ms[affected].sum()
 
         # Average loss per affected household
-        affected_mask = affected & (hh_weight.values > 0)
-        avg_loss_per_affected_hh = 0
-        if affected_mask.sum() > 0:
-            avg_loss_per_affected_hh = (
-                (income_change.values[affected_mask] * hh_weight.values[affected_mask]).sum()
-                / hh_weight.values[affected_mask].sum()
-            )
+        avg_loss_per_affected_hh = (
+            income_change[affected].mean() if affected.sum() > 0 else 0
+        )
 
         results.append({
             "year": fiscal_year,
@@ -187,41 +177,30 @@ def calculate_distributional_impact(baseline, reform):
     results = []
 
     for year in YEARS:
+        # sim.calculate() returns MicroSeries with weights
         baseline_income = baseline.calculate(
             "household_net_income", period=year, map_to="household"
         )
         reform_income = reform.calculate(
             "household_net_income", period=year, map_to="household"
         )
-        decile = baseline.calculate(
+        income_decile = baseline.calculate(
             "household_income_decile", period=year, map_to="household"
         )
-        weight = baseline.calculate(
-            "household_weight", period=year, map_to="household"
-        )
 
+        # MicroSeries subtraction preserves weights, .mean()/.sum() are weighted
         change = reform_income - baseline_income
 
-        df = pd.DataFrame({
-            "decile": decile.values,
-            "change": change.values,
-            "baseline_income": baseline_income.values,
-            "weight": weight.values,
-        })
-        df = df[df["decile"] >= 1]
-
         for d in range(1, 11):
-            dd = df[df["decile"] == d]
-            total_w = dd["weight"].sum()
-            if total_w == 0:
+            decile_mask = np.array(income_decile) == d
+            if not decile_mask.any():
                 continue
 
-            weighted_change = (dd["change"] * dd["weight"]).sum()
-            weighted_baseline = (dd["baseline_income"] * dd["weight"]).sum()
-            avg_change = weighted_change / total_w
+            avg_change = change[decile_mask].mean()
+            avg_baseline = baseline_income[decile_mask].mean()
             rel_change = (
-                (weighted_change / weighted_baseline) * 100
-                if weighted_baseline > 0
+                (avg_change / avg_baseline) * 100
+                if avg_baseline > 0
                 else 0
             )
 
@@ -259,35 +238,26 @@ def calculate_poverty_impact(baseline, reform):
     results = []
 
     for year in YEARS:
-        person_weight = baseline.calculate(
-            "person_weight", period=year, map_to="person"
-        ).values
-        age = baseline.calculate(
-            "age", period=year, map_to="person"
-        ).values
-        is_child = age < 18
+        # sim.calculate() returns MicroSeries with weights
+        age = baseline.calculate("age", period=year, map_to="person")
+        is_child = np.array(age) < 18
 
         for measure_name, var_name in measures:
             try:
                 baseline_pov = baseline.calculate(
                     var_name, period=year, map_to="person"
-                ).values
+                )
                 reform_pov = reform.calculate(
                     var_name, period=year, map_to="person"
-                ).values
+                )
             except Exception as e:
                 print(f"  Skipping {var_name}: {e}")
                 continue
 
+            # .mean() on boolean MicroSeries = weighted poverty rate
             # Children
-            child_baseline_rate = (
-                person_weight[is_child & baseline_pov].sum()
-                / person_weight[is_child].sum()
-            ) * 100
-            child_reform_rate = (
-                person_weight[is_child & reform_pov].sum()
-                / person_weight[is_child].sum()
-            ) * 100
+            child_baseline_rate = baseline_pov[is_child].mean() * 100
+            child_reform_rate = reform_pov[is_child].mean() * 100
             child_change_pp = child_reform_rate - child_baseline_rate
             child_change_pct = (
                 (child_change_pp / child_baseline_rate) * 100
@@ -296,14 +266,8 @@ def calculate_poverty_impact(baseline, reform):
             )
 
             # All people
-            all_baseline_rate = (
-                person_weight[baseline_pov].sum()
-                / person_weight.sum()
-            ) * 100
-            all_reform_rate = (
-                person_weight[reform_pov].sum()
-                / person_weight.sum()
-            ) * 100
+            all_baseline_rate = baseline_pov.mean() * 100
+            all_reform_rate = reform_pov.mean() * 100
             all_change_pp = all_reform_rate - all_baseline_rate
             all_change_pct = (
                 (all_change_pp / all_baseline_rate) * 100
@@ -340,6 +304,7 @@ def calculate_inequality_impact(baseline, reform):
     results = []
 
     for year in YEARS:
+        # sim.calculate() returns MicroSeries with weights
         baseline_equiv = baseline.calculate(
             "equiv_household_net_income", period=year, map_to="household"
         )
@@ -349,17 +314,15 @@ def calculate_inequality_impact(baseline, reform):
         hh_count = baseline.calculate(
             "household_count_people", period=year, map_to="household"
         )
-        hh_weight = baseline.calculate(
-            "household_weight", period=year, map_to="household"
-        )
 
-        adjusted_weights = hh_weight.values * hh_count.values
+        # Person-weight the household data for Gini (weight by household size)
+        adjusted_weights = baseline_equiv.weights.values * np.array(hh_count)
 
         baseline_gini = MicroSeries(
-            np.maximum(baseline_equiv.values, 0), weights=adjusted_weights
+            np.maximum(np.array(baseline_equiv), 0), weights=adjusted_weights
         ).gini()
         reform_gini = MicroSeries(
-            np.maximum(reform_equiv.values, 0), weights=adjusted_weights
+            np.maximum(np.array(reform_equiv), 0), weights=adjusted_weights
         ).gini()
 
         gini_change_pct = (
