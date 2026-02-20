@@ -275,7 +275,7 @@ export default function TwoChildLimitDashboard() {
           that restoring the two-child limit would save the government{" "}
           {budgetSummary}.
         </p>
-        <p className="table-caption">Table 1: Budgetary impact</p>
+        <p className="table-caption">Budgetary impact</p>
         <div className="data-table-container">
           <table className="data-table">
             <thead>
@@ -313,7 +313,7 @@ export default function TwoChildLimitDashboard() {
             the cap.
           </p>
           <p className="table-caption">
-            Table 2: Affected households and children
+            Table 1: Affected households and children
           </p>
           <div className="data-table-container">
             <table className="data-table">
@@ -403,6 +403,9 @@ export default function TwoChildLimitDashboard() {
             housing costs (BHC) and after housing costs (AHC).
           </p>
 
+          <p className="table-caption">
+            Table 2: Change in poverty rates
+          </p>
           <div className="toggle-row">
             <div className="chart-toggle">
               {years.map((y) => (
@@ -427,10 +430,6 @@ export default function TwoChildLimitDashboard() {
               ))}
             </div>
           </div>
-
-          <p className="table-caption">
-            Table 3: Change in poverty rates
-          </p>
           <div className="data-table-container">
             <table className="data-table">
               <thead>
@@ -512,7 +511,7 @@ export default function TwoChildLimitDashboard() {
             Gini index would rise by {ineqSummary}.
           </p>
 
-          <p className="table-caption">Table 4: Change in Gini index</p>
+          <p className="table-caption">Table 3: Change in Gini index</p>
           <div className="data-table-container">
             <table className="data-table">
               <thead>

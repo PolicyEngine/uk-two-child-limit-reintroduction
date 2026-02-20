@@ -5,12 +5,12 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;font-size:18px;line-height:1.6;padding:8px 0}
-table{width:100%;border-collapse:collapse;margin:8px 0}
+table{width:100%;border-collapse:collapse;margin:16px 0}
 th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #e5e7eb}
 th{font-weight:600;color:#333}
 tr:nth-child(even){background:#f9fafb}
 .caption{font-weight:600;margin-top:16px;margin-bottom:4px}
-p{margin:8px 0}
+p{margin:16px 0}
 .neg{color:#DC2626;font-weight:600}
 .toggle-row{display:flex;justify-content:center;gap:16px;margin-bottom:12px}
 .toggle-group{display:flex;background:#f3f4f6;border-radius:8px;padding:3px}
@@ -46,7 +46,7 @@ fetch('./data/poverty.csv')
     ['Absolute','Relative'].forEach(t=>{html+=`<button class="toggle-btn${t===selType?' active':''}" data-type="${t}">${t}</button>`});
     html+=`</div></div>`;
 
-    html+=`<p class="caption">Table 3: Change in poverty rates</p>`;
+    html+=`<p class="caption">Table 1: Change in poverty rates</p>`;
     html+=`<table><tr><th>Group</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th><th>Moved into poverty</th></tr>`;
     filtered.forEach(r=>{
       const group=r.group==='Children'?'Children':'All people';
