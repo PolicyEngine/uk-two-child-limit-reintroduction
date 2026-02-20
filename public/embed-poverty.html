@@ -11,12 +11,12 @@ th{font-weight:600;color:#333}
 tr:nth-child(even){background:#f9fafb}
 .caption{font-weight:600;margin-top:16px;margin-bottom:4px}
 p{margin:8px 0}
-.toggle-group{display:flex;justify-content:center;gap:4px;margin-bottom:8px}
-.toggle-btn{padding:6px 16px;font-size:.85rem;font-weight:500;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;transition:all .15s ease}
-.toggle-btn:first-child{border-radius:6px 0 0 6px}
-.toggle-btn:last-child{border-radius:0 6px 6px 0}
-.toggle-btn:hover{background:#f1f5f9}
-.toggle-btn.active{background:#2C6496;border-color:#2C6496;color:#fff}
+.neg{color:#DC2626;font-weight:600}
+.toggle-row{display:flex;justify-content:center;gap:16px;margin-bottom:12px}
+.toggle-group{display:flex;background:#f3f4f6;border-radius:8px;padding:3px}
+.toggle-btn{padding:8px 20px;border:none;background:transparent;font-size:13px;font-weight:500;color:#6B7280;cursor:pointer;border-radius:6px;transition:all .2s}
+.toggle-btn:hover{background:#e5e7eb}
+.toggle-btn.active{background:#6B7280;color:#fff}
 </style>
 </head>
 <body>
@@ -25,36 +25,36 @@ p{margin:8px 0}
 fetch('./data/poverty.csv')
 .then(r=>r.text())
 .then(csv=>{
-  const rows=csv.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],measure:c[1],group:c[2],baseline:parseFloat(c[3]),reform:parseFloat(c[4]),change:parseFloat(c[5])}});
+  const rows=csv.trim().split('\n').slice(1).map(l=>{
+    const c=l.split(',');
+    return{year:c[0],measure:c[1],group:c[2],baseline:parseFloat(c[3]),reform:parseFloat(c[4]),change:parseFloat(c[5]),changePct:parseFloat(c[6]),baselineCount:parseInt(c[7]),reformCount:parseInt(c[8])}
+  });
   const fmt=v=>v.toFixed(1);
+  const fmtM=v=>((v)/1e6).toFixed(1)+'m';
   const years=[...new Set(rows.map(r=>r.year))];
-  let selYear=years[0], selType='Absolute';
+  let selYear=years[0], selType='Relative';
 
   function render(){
     const filtered=rows.filter(r=>r.year===selYear&&r.measure.startsWith(selType));
-    const children=filtered.filter(r=>r.group==='Children');
-    const all=filtered.filter(r=>r.group==='All');
-    const label=selType.toLowerCase();
 
     let html=`<p>Restoring the two-child limit would increase poverty rates, with the largest effect on children. We measure poverty both before housing costs (BHC) and after housing costs (AHC).</p>`;
 
+    html+=`<div class="toggle-row">`;
     html+=`<div class="toggle-group">`;
     years.forEach(y=>{html+=`<button class="toggle-btn${y===selYear?' active':''}" data-year="${y}">${y}</button>`});
     html+=`</div><div class="toggle-group">`;
     ['Absolute','Relative'].forEach(t=>{html+=`<button class="toggle-btn${t===selType?' active':''}" data-type="${t}">${t}</button>`});
-    html+=`</div>`;
+    html+=`</div></div>`;
 
-    function makeTable(title,data){
-      html+=`<p class="caption">${title}</p>`;
-      html+=`<table><tr><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th></tr>`;
-      data.forEach(r=>{
-        const m=r.measure.replace(selType+' ','');
-        html+=`<tr><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td></tr>`;
-      });
-      html+=`</table>`;
-    }
-    makeTable(`Change in ${label} poverty rates (children)`,children);
-    makeTable(`Change in ${label} poverty rates (all people)`,all);
+    html+=`<p class="caption">Table 3: Change in poverty rates</p>`;
+    html+=`<table><tr><th>Group</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th><th>Moved into poverty</th></tr>`;
+    filtered.forEach(r=>{
+      const group=r.group==='Children'?'Children':'All people';
+      const m=r.measure.replace(selType+' ','');
+      const diff=r.reformCount-r.baselineCount;
+      html+=`<tr><td>${group}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td class="neg">+${fmt(r.change)}</td><td class="neg">+${fmtM(diff)}</td></tr>`;
+    });
+    html+=`</table>`;
 
     document.getElementById('content').innerHTML=html;
     document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{selYear=b.dataset.year;render()});

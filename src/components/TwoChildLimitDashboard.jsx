@@ -148,6 +148,10 @@ export default function TwoChildLimitDashboard() {
     return () => observer.disconnect();
   }, [data]);
 
+  // Poverty toggle state (must be before early return to satisfy Rules of Hooks)
+  const [povYear, setPovYear] = useState(null);
+  const [povType, setPovType] = useState("Relative");
+
   /* ── Loading state ──────────────────────────────────────────── */
   if (!data || !data.budgetary) {
     return (
@@ -170,9 +174,8 @@ export default function TwoChildLimitDashboard() {
   const h0 = headcounts?.[0];
   const iq0 = inequality?.[0];
 
-  // Poverty toggle state
-  const [povYear, setPovYear] = useState(firstYear);
-  const [povType, setPovType] = useState("Absolute");
+  // Default poverty year to first year once data is loaded
+  const effectivePovYear = povYear || firstYear;
 
   // First-year child poverty rows (for narrative text)
   const childBhcFirst = poverty?.find((r) => r.year === firstYear && r.measure === "Absolute BHC" && r.group === "Children");
@@ -400,86 +403,97 @@ export default function TwoChildLimitDashboard() {
             housing costs (BHC) and after housing costs (AHC).
           </p>
 
-          <div className="chart-toggle">
-            {years.map((y) => (
-              <button
-                key={y}
-                className={`toggle-btn${povYear === y ? " active" : ""}`}
-                onClick={() => setPovYear(y)}
-              >
-                {y}
-              </button>
-            ))}
-          </div>
-          <div className="chart-toggle">
-            {["Absolute", "Relative"].map((t) => (
-              <button
-                key={t}
-                className={`toggle-btn${povType === t ? " active" : ""}`}
-                onClick={() => setPovType(t)}
-              >
-                {t}
-              </button>
-            ))}
+          <div className="toggle-row">
+            <div className="chart-toggle">
+              {years.map((y) => (
+                <button
+                  key={y}
+                  className={`toggle-btn${effectivePovYear === y ? " active" : ""}`}
+                  onClick={() => setPovYear(y)}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+            <div className="chart-toggle">
+              {["Absolute", "Relative"].map((t) => (
+                <button
+                  key={t}
+                  className={`toggle-btn${povType === t ? " active" : ""}`}
+                  onClick={() => setPovType(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {["Children", "All"].map((group) => {
-            const rows = poverty.filter(
-              (r) =>
-                r.year === povYear &&
-                r.group === group &&
-                r.measure.startsWith(povType)
-            );
-            return (
-              <div key={group}>
-                <p className="table-caption">
-                  Change in {povType.toLowerCase()} poverty rates ({group === "Children" ? "children" : "all people"})
-                </p>
-                <div className="data-table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Measure</th>
-                        <th>Baseline</th>
-                        <th>Reform</th>
-                        <th>Change (pp)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((r, i) => (
-                        <tr key={i}>
-                          <td>{r.measure.replace(`${povType} `, "")}</td>
-                          <td>{fmtPct(r.baseline_rate_pct)}</td>
-                          <td>{fmtPct(r.reform_rate_pct)}</td>
-                          <td
-                            style={{
-                              color: r.change_pp > 0 ? COLORS.negative : undefined,
-                              fontWeight: 600,
-                            }}
-                          >
-                            {r.change_pp > 0 ? "+" : ""}
-                            {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
+          <p className="table-caption">
+            Table 3: Change in poverty rates
+          </p>
+          <div className="data-table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Measure</th>
+                  <th>Baseline</th>
+                  <th>Reform</th>
+                  <th>Change (pp)</th>
+                  <th>Moved into poverty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {poverty
+                  .filter(
+                    (r) =>
+                      r.year === effectivePovYear &&
+                      r.measure.startsWith(povType)
+                  )
+                  .map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.group === "Children" ? "Children" : "All people"}</td>
+                      <td>{r.measure.replace(`${povType} `, "")}</td>
+                      <td>{fmtPct(r.baseline_rate_pct)}</td>
+                      <td>{fmtPct(r.reform_rate_pct)}</td>
+                      <td
+                        style={{
+                          color: r.change_pp > 0 ? COLORS.negative : undefined,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {r.change_pp > 0 ? "+" : ""}
+                        {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
+                      </td>
+                      <td
+                        style={{
+                          color: (r.reform_count - r.baseline_count) > 0 ? COLORS.negative : undefined,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {r.reform_count != null && r.baseline_count != null
+                          ? `+${((r.reform_count - r.baseline_count) / 1e6).toFixed(1)}m`
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
 
           {childBhcFirst && (
             <p>
-              In {firstYear}, absolute child poverty (BHC) would increase by{" "}
-              {roundedChange(childBhcFirst.baseline_rate_pct, childBhcFirst.reform_rate_pct)} percentage points, from{" "}
-              {fmtPct(childBhcFirst.baseline_rate_pct)} to{" "}
-              {fmtPct(childBhcFirst.reform_rate_pct)}.
+              In {firstYear}, absolute child poverty before housing costs (BHC) would
+              increase by{" "}
+              {roundedChange(childBhcFirst.baseline_rate_pct, childBhcFirst.reform_rate_pct)} percentage
+              points, moving an additional{" "}
+              {((childBhcFirst.reform_count - childBhcFirst.baseline_count) / 1e6).toFixed(1)}m
+              children into absolute BHC poverty.
               {childAhcFirst &&
-                ` After housing costs, child poverty would increase by ${roundedChange(childAhcFirst.baseline_rate_pct, childAhcFirst.reform_rate_pct)} percentage points, from ${fmtPct(childAhcFirst.baseline_rate_pct)} to ${fmtPct(childAhcFirst.reform_rate_pct)}.`}
+                ` Absolute child poverty after housing costs (AHC) would increase by ${roundedChange(childAhcFirst.baseline_rate_pct, childAhcFirst.reform_rate_pct)} percentage points, moving an additional ${((childAhcFirst.reform_count - childAhcFirst.baseline_count) / 1e6).toFixed(1)}m children into absolute AHC poverty.`}
               {childAhcLast &&
                 years.length > 1 &&
-                ` By ${lastYear}, the after housing costs child poverty increase grows to ${roundedChange(childAhcLast.baseline_rate_pct, childAhcLast.reform_rate_pct)} percentage points.`}
+                ` By ${lastYear}, the absolute AHC child poverty increase grows to ${roundedChange(childAhcLast.baseline_rate_pct, childAhcLast.reform_rate_pct)} percentage points (${((childAhcLast.reform_count - childAhcLast.baseline_count) / 1e6).toFixed(1)}m additional children).`}
             </p>
           )}
         </section>
@@ -498,7 +512,7 @@ export default function TwoChildLimitDashboard() {
             Gini index would rise by {ineqSummary}.
           </p>
 
-          <p className="table-caption">Table 5: Change in Gini index</p>
+          <p className="table-caption">Table 4: Change in Gini index</p>
           <div className="data-table-container">
             <table className="data-table">
               <thead>

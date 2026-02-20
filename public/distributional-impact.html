@@ -39,20 +39,16 @@
     }
     .year-group {
       display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .year-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: #374151;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 3px;
     }
     .year-btn {
-      padding: 6px 14px;
-      border: 1px solid #d1d5db;
+      padding: 8px 20px;
+      border: none;
       background: transparent;
       font-family: 'Roboto', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
       color: #6B7280;
       cursor: pointer;
@@ -62,7 +58,6 @@
     .year-btn.active {
       background: #6B7280;
       color: white;
-      border-color: #6B7280;
     }
     #chart { width: 100%; }
   </style>
@@ -74,7 +69,6 @@
       <button class="toggle-btn" data-mode="absolute">Absolute (&pound;)</button>
     </div>
     <div class="year-group">
-      <span class="year-label">Year:</span>
     </div>
   </div>
   <div id="chart"></div>

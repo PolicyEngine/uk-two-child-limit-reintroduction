@@ -1,17 +1,17 @@
-year,measure,group,baseline_rate_pct,reform_rate_pct,change_pp,change_pct
-2029-30,Absolute BHC,Children,11.05,12.9,1.85,16.7
-2029-30,Absolute BHC,All,9.2,9.75,0.55,6.0
-2029-30,Relative BHC,Children,15.3,18.98,3.67,24.0
-2029-30,Relative BHC,All,12.25,13.33,1.08,8.8
-2029-30,Absolute AHC,Children,18.8,21.86,3.06,16.3
-2029-30,Absolute AHC,All,13.52,14.47,0.95,7.0
-2029-30,Relative AHC,Children,24.43,28.84,4.41,18.0
-2029-30,Relative AHC,All,17.95,19.29,1.34,7.4
-2030-31,Absolute BHC,Children,11.19,12.67,1.48,13.2
-2030-31,Absolute BHC,All,9.39,9.85,0.46,4.9
-2030-31,Relative BHC,Children,15.15,19.43,4.28,28.3
-2030-31,Relative BHC,All,12.26,13.54,1.28,10.5
-2030-31,Absolute AHC,Children,19.19,23.42,4.23,22.1
-2030-31,Absolute AHC,All,13.91,15.2,1.29,9.3
-2030-31,Relative AHC,Children,24.89,28.75,3.86,15.5
-2030-31,Relative AHC,All,18.15,19.31,1.15,6.4
+year,measure,group,baseline_rate_pct,reform_rate_pct,change_pp,change_pct,baseline_count,reform_count
+2029-30,Absolute BHC,Children,11.05,12.9,1.85,16.7,1699057,1983250
+2029-30,Absolute BHC,All,9.2,9.75,0.55,6.0,6607720,7001419
+2029-30,Relative BHC,Children,15.3,18.98,3.67,24.0,2352406,2917237
+2029-30,Relative BHC,All,12.25,13.33,1.08,8.8,8798729,9573572
+2029-30,Absolute AHC,Children,18.8,21.86,3.06,16.3,2890084,3360616
+2029-30,Absolute AHC,All,13.52,14.47,0.95,7.0,9707006,10389568
+2029-30,Relative AHC,Children,24.43,28.84,4.41,18.0,3755796,4433572
+2029-30,Relative AHC,All,17.95,19.29,1.34,7.4,12891393,13850138
+2030-31,Absolute BHC,Children,11.19,12.67,1.48,13.2,1728441,1956909
+2030-31,Absolute BHC,All,9.39,9.85,0.46,4.9,6771715,7101881
+2030-31,Relative BHC,Children,15.15,19.43,4.28,28.3,2339153,3000409
+2030-31,Relative BHC,All,12.26,13.54,1.28,10.5,8841634,9768282
+2030-31,Absolute AHC,Children,19.19,23.42,4.23,22.1,2963276,3616692
+2030-31,Absolute AHC,All,13.91,15.2,1.29,9.3,10031280,10961801
+2030-31,Relative AHC,Children,24.89,28.75,3.86,15.5,3842782,4439509
+2030-31,Relative AHC,All,18.15,19.31,1.15,6.4,13092504,13925393

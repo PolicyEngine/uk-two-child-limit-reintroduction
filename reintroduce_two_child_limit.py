@@ -228,9 +228,13 @@ def calculate_poverty_impact(baseline, reform):
             if mask is not None:
                 baseline_rate = baseline_pov[mask].mean() * 100
                 reform_rate = reform_pov[mask].mean() * 100
+                baseline_count = int(round(baseline_pov[mask].sum()))
+                reform_count = int(round(reform_pov[mask].sum()))
             else:
                 baseline_rate = baseline_pov.mean() * 100
                 reform_rate = reform_pov.mean() * 100
+                baseline_count = int(round(baseline_pov.sum()))
+                reform_count = int(round(reform_pov.sum()))
 
             change_pp = reform_rate - baseline_rate
             change_pct = (
@@ -247,6 +251,8 @@ def calculate_poverty_impact(baseline, reform):
                 "reform_rate_pct": round(reform_rate, 2),
                 "change_pp": round(change_pp, 2),
                 "change_pct": round(change_pct, 1),
+                "baseline_count": baseline_count,
+                "reform_count": reform_count,
             })
 
     results = []
