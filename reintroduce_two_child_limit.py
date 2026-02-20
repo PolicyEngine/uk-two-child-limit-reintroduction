@@ -217,83 +217,87 @@ def calculate_distributional_impact(baseline, reform):
 def calculate_poverty_impact(baseline, reform):
     """Calculate poverty impact by age group and measure.
 
-    Measures: absolute BHC, absolute AHC, relative BHC, relative AHC
-    Groups: children (age < 18), all
+    Covers the same measures as the Scottish Budget MetricsCalculator:
+    - Absolute and relative poverty (BHC and AHC)
+    - Deep absolute poverty (BHC and AHC)
+    - Groups: children (age < 18), all
     """
     print("\nCalculating poverty impact...")
 
-    poverty_vars = {
-        "absolute_bhc": "in_poverty_bhc",
-        "absolute_ahc": "in_poverty_ahc",
-        "relative_bhc": "in_deep_poverty_bhc",  # Check available vars
-    }
+    def add_poverty_rows(results, fiscal_year, measure_name, baseline_pov, reform_pov, is_child):
+        """Add Children and All rows for a given poverty measure."""
+        for group, mask in [("Children", is_child), ("All", None)]:
+            if mask is not None:
+                baseline_rate = baseline_pov[mask].mean() * 100
+                reform_rate = reform_pov[mask].mean() * 100
+            else:
+                baseline_rate = baseline_pov.mean() * 100
+                reform_rate = reform_pov.mean() * 100
 
-    # Available poverty variables in policyengine-uk
-    measures = [
-        ("Absolute BHC", "in_poverty_bhc"),
-        ("Absolute AHC", "in_poverty_ahc"),
-        # Relative poverty uses different variable names
-    ]
+            change_pp = reform_rate - baseline_rate
+            change_pct = (
+                (change_pp / baseline_rate) * 100
+                if baseline_rate > 0
+                else 0
+            )
+
+            results.append({
+                "year": fiscal_year,
+                "measure": measure_name,
+                "group": group,
+                "baseline_rate_pct": round(baseline_rate, 2),
+                "reform_rate_pct": round(reform_rate, 2),
+                "change_pp": round(change_pp, 2),
+                "change_pct": round(change_pct, 1),
+            })
 
     results = []
 
     for year in YEARS:
+        fiscal_year = f"{year}-{str(year + 1)[-2:]}"
+
         # sim.calculate() returns MicroSeries with weights
         age = baseline.calculate("age", period=year, map_to="person")
         is_child = np.array(age) < 18
 
-        for measure_name, var_name in measures:
-            try:
+        for housing_cost in ["bhc", "ahc"]:
+            hc_label = housing_cost.upper()
+
+            for poverty_type in ["absolute", "relative"]:
+                # Variable names follow the Scottish MetricsCalculator pattern
+                if poverty_type == "absolute":
+                    poverty_var = f"in_poverty_{housing_cost}"
+                    deep_poverty_var = f"in_deep_poverty_{housing_cost}"
+                else:
+                    poverty_var = f"in_relative_poverty_{housing_cost}"
+                    deep_poverty_var = None
+
+                # Poverty rate
+                measure_name = f"{poverty_type.title()} {hc_label}"
                 baseline_pov = baseline.calculate(
-                    var_name, period=year, map_to="person"
+                    poverty_var, period=year, map_to="person"
                 )
                 reform_pov = reform.calculate(
-                    var_name, period=year, map_to="person"
+                    poverty_var, period=year, map_to="person"
                 )
-            except Exception as e:
-                print(f"  Skipping {var_name}: {e}")
-                continue
+                add_poverty_rows(
+                    results, fiscal_year, measure_name,
+                    baseline_pov, reform_pov, is_child,
+                )
 
-            # .mean() on boolean MicroSeries = weighted poverty rate
-            # Children
-            child_baseline_rate = baseline_pov[is_child].mean() * 100
-            child_reform_rate = reform_pov[is_child].mean() * 100
-            child_change_pp = child_reform_rate - child_baseline_rate
-            child_change_pct = (
-                (child_change_pp / child_baseline_rate) * 100
-                if child_baseline_rate > 0
-                else 0
-            )
-
-            # All people
-            all_baseline_rate = baseline_pov.mean() * 100
-            all_reform_rate = reform_pov.mean() * 100
-            all_change_pp = all_reform_rate - all_baseline_rate
-            all_change_pct = (
-                (all_change_pp / all_baseline_rate) * 100
-                if all_baseline_rate > 0
-                else 0
-            )
-
-            fiscal_year = f"{year}-{str(year + 1)[-2:]}"
-            results.append({
-                "year": fiscal_year,
-                "measure": measure_name,
-                "group": "Children",
-                "baseline_rate_pct": round(child_baseline_rate, 2),
-                "reform_rate_pct": round(child_reform_rate, 2),
-                "change_pp": round(child_change_pp, 2),
-                "change_pct": round(child_change_pct, 1),
-            })
-            results.append({
-                "year": fiscal_year,
-                "measure": measure_name,
-                "group": "All",
-                "baseline_rate_pct": round(all_baseline_rate, 2),
-                "reform_rate_pct": round(all_reform_rate, 2),
-                "change_pp": round(all_change_pp, 2),
-                "change_pct": round(all_change_pct, 1),
-            })
+                # Deep poverty (absolute only)
+                if deep_poverty_var:
+                    deep_name = f"Deep {measure_name}"
+                    baseline_deep = baseline.calculate(
+                        deep_poverty_var, period=year, map_to="person"
+                    )
+                    reform_deep = reform.calculate(
+                        deep_poverty_var, period=year, map_to="person"
+                    )
+                    add_poverty_rows(
+                        results, fiscal_year, deep_name,
+                        baseline_deep, reform_deep, is_child,
+                    )
 
     return pd.DataFrame(results)
 
