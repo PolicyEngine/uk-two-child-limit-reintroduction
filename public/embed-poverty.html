@@ -56,6 +56,17 @@ fetch('./data/poverty.csv')
     });
     html+=`</table>`;
 
+    // Narrative paragraph
+    const childBhc=rows.find(r=>r.year===years[0]&&r.measure==='Absolute BHC'&&r.group==='Children');
+    const childAhc=rows.find(r=>r.year===years[0]&&r.measure==='Absolute AHC'&&r.group==='Children');
+    const childAhcLast=rows.find(r=>r.year===years[years.length-1]&&r.measure==='Absolute AHC'&&r.group==='Children');
+    if(childBhc){
+      html+=`<p>In ${years[0]}, absolute child poverty before housing costs (BHC) would increase by ${fmt(childBhc.change)} percentage points, moving an additional ${fmtM(childBhc.reformCount-childBhc.baselineCount)} children into absolute BHC poverty.`;
+      if(childAhc) html+=` Absolute child poverty after housing costs (AHC) would increase by ${fmt(childAhc.change)} percentage points, moving an additional ${fmtM(childAhc.reformCount-childAhc.baselineCount)} children into absolute AHC poverty.`;
+      if(childAhcLast&&years.length>1) html+=` By ${years[years.length-1]}, the absolute AHC child poverty increase grows to ${fmt(childAhcLast.change)} percentage points (${fmtM(childAhcLast.reformCount-childAhcLast.baselineCount)} additional children).`;
+      html+=`</p>`;
+    }
+
     document.getElementById('content').innerHTML=html;
     document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{selYear=b.dataset.year;render()});
     document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{selType=b.dataset.type;render()});
