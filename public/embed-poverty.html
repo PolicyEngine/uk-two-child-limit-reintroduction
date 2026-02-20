@@ -39,14 +39,14 @@ fetch('./data/poverty.csv')
 
     let html=`<p>Restoring the two-child limit would increase poverty rates, with the largest effect on children. We measure poverty both before housing costs (BHC) and after housing costs (AHC).</p>`;
 
+    html+=`<p class="caption">Table 2: Change in poverty rates</p>`;
+
     html+=`<div class="toggle-row">`;
     html+=`<div class="toggle-group">`;
     years.forEach(y=>{html+=`<button class="toggle-btn${y===selYear?' active':''}" data-year="${y}">${y}</button>`});
     html+=`</div><div class="toggle-group">`;
     ['Absolute','Relative'].forEach(t=>{html+=`<button class="toggle-btn${t===selType?' active':''}" data-type="${t}">${t}</button>`});
     html+=`</div></div>`;
-
-    html+=`<p class="caption">Table 2: Change in poverty rates</p>`;
     html+=`<table><tr><th>Group</th><th>Measure</th><th>Baseline</th><th>Reform</th><th>Change (pp)</th><th>Moved into poverty</th></tr>`;
     filtered.forEach(r=>{
       const group=r.group==='Children'?'Children':'All people';
