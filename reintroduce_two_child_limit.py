@@ -217,10 +217,8 @@ def calculate_distributional_impact(baseline, reform):
 def calculate_poverty_impact(baseline, reform):
     """Calculate poverty impact by age group and measure.
 
-    Covers the same measures as the Scottish Budget MetricsCalculator:
-    - Absolute and relative poverty (BHC and AHC)
-    - Deep absolute poverty (BHC and AHC)
-    - Groups: children (age < 18), all
+    Measures: Absolute and Relative poverty (BHC and AHC).
+    Groups: children (age < 18), all.
     """
     print("\nCalculating poverty impact...")
 
@@ -267,12 +265,9 @@ def calculate_poverty_impact(baseline, reform):
                 # Variable names follow the Scottish MetricsCalculator pattern
                 if poverty_type == "absolute":
                     poverty_var = f"in_poverty_{housing_cost}"
-                    deep_poverty_var = f"in_deep_poverty_{housing_cost}"
                 else:
                     poverty_var = f"in_relative_poverty_{housing_cost}"
-                    deep_poverty_var = None
 
-                # Poverty rate
                 measure_name = f"{poverty_type.title()} {hc_label}"
                 baseline_pov = baseline.calculate(
                     poverty_var, period=year, map_to="person"
@@ -284,20 +279,6 @@ def calculate_poverty_impact(baseline, reform):
                     results, fiscal_year, measure_name,
                     baseline_pov, reform_pov, is_child,
                 )
-
-                # Deep poverty (absolute only)
-                if deep_poverty_var:
-                    deep_name = f"Deep {measure_name}"
-                    baseline_deep = baseline.calculate(
-                        deep_poverty_var, period=year, map_to="person"
-                    )
-                    reform_deep = reform.calculate(
-                        deep_poverty_var, period=year, map_to="person"
-                    )
-                    add_poverty_rows(
-                        results, fiscal_year, deep_name,
-                        baseline_deep, reform_deep, is_child,
-                    )
 
     return pd.DataFrame(results)
 
