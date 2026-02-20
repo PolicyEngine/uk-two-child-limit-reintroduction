@@ -23,8 +23,8 @@ fetch('./data/headcounts.csv')
   const headers=lines[0].split(',');
   const rows=lines.slice(1).map(l=>{const c=l.split(',');return{year:c[0],affected_hh:parseFloat(c[2]),affected_ch:parseFloat(c[6]),pct_ch:parseFloat(c[9])}});
   const r0=rows[0];
-  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e3)} thousand`};
-  const fmtCountShort=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)}m`;return`${Math.round(abs/1e3)}k`};
+  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e5)*100} thousand`};
+  const fmtCountShort=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)}m`;return`${Math.round(abs/1e5)*100}k`};
   const fmtPct=v=>v.toFixed(1);
   let html=`<p>In ${r0.year} reinstating the two child limit would affect ${fmtCount(r0.affected_hh)} households and ${fmtCount(r0.affected_ch)} children, accounting for ${fmtPct(r0.pct_ch)}% of all children.</p>`;
   html+=`<p class="caption">Table 2: Affected households and children</p>`;

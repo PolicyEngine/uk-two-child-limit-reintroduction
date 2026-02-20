@@ -20,7 +20,7 @@ Promise.all([
   fetch('./data/constituency.csv').then(r=>r.text()),
 ]).then(([budgetCSV,headCSV,povCSV,ineqCSV,distCSV,constCSV])=>{
   const fmt=v=>v.toFixed(1);
-  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e3)} thousand`};
+  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e5)*100} thousand`};
 
   const bRows=budgetCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],val:parseFloat(c[1])}});
   const hRows=headCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],hh:parseFloat(c[2]),ch:parseFloat(c[6]),pct:parseFloat(c[9])}});
