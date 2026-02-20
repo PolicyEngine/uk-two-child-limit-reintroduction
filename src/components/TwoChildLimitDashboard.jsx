@@ -374,11 +374,11 @@ export default function TwoChildLimitDashboard() {
           <p>
             The losses decline for higher deciles
             {zeroDecilesText && `, with ${zeroDecilesText} seeing no change`}.
-            {" "}This is because the two-child limit only applies to means-tested
+            {" "}The two-child limit applies to means-tested
             benefits — Universal Credit and Child Tax Credit — which are
-            tapered away as household income rises. Higher-income households
-            have little or no entitlement to these benefits, so reintroducing
-            the cap has no effect on them.
+            tapered away as household income rises. Households in the upper
+            deciles receive none of these benefits, so reintroducing
+            the cap does not affect them.
             {worstDecileLast && years.length > 1 && (
               <>
                 {" "}
