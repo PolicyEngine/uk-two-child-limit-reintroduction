@@ -52,7 +52,7 @@ fetch('./data/poverty.csv')
       const group=r.group==='Children'?'Children':'All people';
       const m=r.measure.replace(selType+' ','');
       const diff=r.reformCount-r.baselineCount;
-      html+=`<tr><td>${group}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td class="neg">+${fmt(r.change)}</td><td class="neg">+${fmtM(diff)}</td></tr>`;
+      html+=`<tr><td>${group}</td><td>${m}</td><td>${fmt(r.baseline)}%</td><td>${fmt(r.reform)}%</td><td>+${fmt(r.change)}</td><td>+${fmtM(diff)}</td></tr>`;
     });
     html+=`</table>`;
 

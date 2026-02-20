@@ -374,6 +374,11 @@ export default function TwoChildLimitDashboard() {
           <p>
             The losses decline for higher deciles
             {zeroDecilesText && `, with ${zeroDecilesText} seeing no change`}.
+            {" "}This is because the two-child limit only applies to means-tested
+            benefits — Universal Credit and Child Tax Credit — which are
+            tapered away as household income rises. Higher-income households
+            have little or no entitlement to these benefits, so reintroducing
+            the cap has no effect on them.
             {worstDecileLast && years.length > 1 && (
               <>
                 {" "}
@@ -455,21 +460,11 @@ export default function TwoChildLimitDashboard() {
                       <td>{r.measure.replace(`${povType} `, "")}</td>
                       <td>{fmtPct(r.baseline_rate_pct)}</td>
                       <td>{fmtPct(r.reform_rate_pct)}</td>
-                      <td
-                        style={{
-                          color: r.change_pp > 0 ? COLORS.negative : undefined,
-                          fontWeight: 600,
-                        }}
-                      >
+                      <td>
                         {r.change_pp > 0 ? "+" : ""}
                         {roundedChange(r.baseline_rate_pct, r.reform_rate_pct)}
                       </td>
-                      <td
-                        style={{
-                          color: (r.reform_count - r.baseline_count) > 0 ? COLORS.negative : undefined,
-                          fontWeight: 600,
-                        }}
-                      >
+                      <td>
                         {r.reform_count != null && r.baseline_count != null
                           ? `+${((r.reform_count - r.baseline_count) / 1e6).toFixed(1)}m`
                           : "—"}
