@@ -42,11 +42,6 @@ fetch('./data/poverty.csv')
   });
   html+=`</table>`;
 
-  const bhc2029=children.find(r=>r.year==='2029-30'&&r.measure.includes('BHC'));
-  const ahc2029=children.find(r=>r.year==='2029-30'&&r.measure.includes('AHC'));
-  const ahc2030=children.find(r=>r.year==='2030-31'&&r.measure.includes('AHC'));
-  html+=`<p>In 2029-30, absolute child poverty (BHC) would increase by ${fmt(bhc2029.change)} percentage points, from ${fmt(bhc2029.baseline)}% to ${fmt(bhc2029.reform)}%. After housing costs, child poverty would increase by ${fmt(ahc2029.change)} percentage points, from ${fmt(ahc2029.baseline)}% to ${fmt(ahc2029.reform)}%. By 2030-31, the after housing costs child poverty increase grows to ${fmt(ahc2030.change)} percentage points.</p>`;
-
   document.getElementById('content').innerHTML=html;
 });
 </script>

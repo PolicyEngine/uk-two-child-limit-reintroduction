@@ -23,11 +23,10 @@ fetch('./data/inequality.csv')
   const r0=rows[0],r1=rows[1];
   const fmt=v=>v.toFixed(1);
 
-  let html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${fmt(r1.change)}% in ${r1.year}.</p>`;
-  html+=`<p class="caption">Table 5: Change in Gini index</p>`;
-  html+=`<table><tr><th>Year</th><th>Change</th></tr>`;
-  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>+${fmt(r.change)}%</td></tr>`});
-  html+=`</table>`;
+  const same=fmt(r0.change)===fmt(r1.change);
+  let html;
+  if(same){html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${r1.year}.</p>`}
+  else{html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${fmt(r1.change)}% in ${r1.year}.</p>`}
   document.getElementById('content').innerHTML=html;
 });
 </script>
