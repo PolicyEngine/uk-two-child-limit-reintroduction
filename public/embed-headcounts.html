@@ -25,7 +25,7 @@ fetch('./data/headcounts.csv')
   const r0=rows[0];
   const fmtM=v=>(v/1e6).toFixed(1);
   const fmtPct=v=>v.toFixed(1);
-  let html=`<p>The reform would affect ${fmtM(r0.affected_hh)} million households and ${fmtM(r0.affected_ch)} million children (${fmtPct(r0.pct_ch)}% of all children) in ${r0.year}. Affected children are those beyond the second child in each household — the ones who directly lose benefit entitlement under the cap.</p>`;
+  let html=`<p>In ${r0.year} reinstating the two child limit would affect ${fmtM(r0.affected_hh)} million households and ${fmtM(r0.affected_ch)} million children, accounting for ${fmtPct(r0.pct_ch)}% of all children.</p>`;
   html+=`<p class="caption">Table 2: Affected households and children</p>`;
   html+=`<table><tr><th>Year</th><th>Affected households</th><th>Affected children</th><th>Share of all children (%)</th></tr>`;
   rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>${fmtM(r.affected_hh)}m</td><td>${fmtM(r.affected_ch)}m</td><td>${fmtPct(r.pct_ch)}%</td></tr>`});
