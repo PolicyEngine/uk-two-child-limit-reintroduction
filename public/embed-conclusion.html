@@ -20,7 +20,7 @@ Promise.all([
   fetch('./data/constituency.csv').then(r=>r.text()),
 ]).then(([budgetCSV,headCSV,povCSV,ineqCSV,distCSV,constCSV])=>{
   const fmt=v=>v.toFixed(1);
-  const fmtM=v=>(v/1e6).toFixed(1);
+  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e3)} thousand`};
 
   const bRows=budgetCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],val:parseFloat(c[1])}});
   const hRows=headCSV.trim().split('\n').slice(1).map(l=>{const c=l.split(',');return{year:c[0],hh:parseFloat(c[2]),ch:parseFloat(c[6]),pct:parseFloat(c[9])}});
@@ -48,7 +48,7 @@ Promise.all([
   const top3Str=top3.slice(0,-1).join(', ')+', and '+top3[top3.length-1];
   const ordinals=['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth'];
 
-  const html=`<p>PolicyEngine estimates that restoring the two-child benefit cap would save the government £${fmt(b0.val)} billion in ${b0.year}, affecting ${fmtM(h0.hh)} million households and ${fmtM(h0.ch)} million children beyond the second child (${fmt(h0.pct)}% of all children). Absolute child poverty (BHC) would increase by ${fmt(bhc2029.change)} percentage points, from ${fmt(bhc2029.baseline)}% to ${fmt(bhc2029.reform)}%, and the Gini index would rise by ${fmt(ineq0.change)}%. The reform would reduce incomes for the lowest ${affectedDeciles} income deciles, with the ${ordinals[maxD.decile-1]} decile losing ${Math.abs(maxD.rel).toFixed(1)}% of household income on average. ${top3Str} would be the most affected constituencies.</p>`;
+  const html=`<p>PolicyEngine estimates that restoring the two-child benefit cap would save the government £${fmt(b0.val)} billion in ${b0.year}, affecting ${fmtCount(h0.hh)} households and ${fmtCount(h0.ch)} children beyond the second child (${fmt(h0.pct)}% of all children). Absolute child poverty (BHC) would increase by ${fmt(bhc2029.change)} percentage points, from ${fmt(bhc2029.baseline)}% to ${fmt(bhc2029.reform)}%, and the Gini index would rise by ${fmt(ineq0.change)}%. The reform would reduce incomes for the lowest ${affectedDeciles} income deciles, with households in the ${ordinals[maxD.decile-1]} decile losing an average of ${Math.abs(maxD.rel).toFixed(1)}% of household income. ${top3Str} would be the most affected constituencies.</p>`;
   document.getElementById('content').innerHTML=html;
 });
 </script>

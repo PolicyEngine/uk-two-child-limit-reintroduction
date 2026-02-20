@@ -23,12 +23,13 @@ fetch('./data/headcounts.csv')
   const headers=lines[0].split(',');
   const rows=lines.slice(1).map(l=>{const c=l.split(',');return{year:c[0],affected_hh:parseFloat(c[2]),affected_ch:parseFloat(c[6]),pct_ch:parseFloat(c[9])}});
   const r0=rows[0];
-  const fmtM=v=>(v/1e6).toFixed(1);
+  const fmtCount=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)} million`;return`${Math.round(abs/1e3)} thousand`};
+  const fmtCountShort=v=>{const abs=Math.abs(v);if(abs>=1e6)return`${Math.round(abs/1e6)}m`;return`${Math.round(abs/1e3)}k`};
   const fmtPct=v=>v.toFixed(1);
-  let html=`<p>In ${r0.year} reinstating the two child limit would affect ${fmtM(r0.affected_hh)} million households and ${fmtM(r0.affected_ch)} million children, accounting for ${fmtPct(r0.pct_ch)}% of all children.</p>`;
+  let html=`<p>In ${r0.year} reinstating the two child limit would affect ${fmtCount(r0.affected_hh)} households and ${fmtCount(r0.affected_ch)} children, accounting for ${fmtPct(r0.pct_ch)}% of all children.</p>`;
   html+=`<p class="caption">Table 2: Affected households and children</p>`;
   html+=`<table><tr><th>Year</th><th>Affected households</th><th>Affected children</th><th>Share of all children (%)</th></tr>`;
-  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>${fmtM(r.affected_hh)}m</td><td>${fmtM(r.affected_ch)}m</td><td>${fmtPct(r.pct_ch)}%</td></tr>`});
+  rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>${fmtCountShort(r.affected_hh)}</td><td>${fmtCountShort(r.affected_ch)}</td><td>${fmtPct(r.pct_ch)}%</td></tr>`});
   html+=`</table>`;
   document.getElementById('content').innerHTML=html;
 });
