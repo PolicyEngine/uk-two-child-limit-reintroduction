@@ -490,6 +490,33 @@ export default function TwoChildLimitDashboard() {
                 ` By ${lastYear}, the absolute AHC child poverty increase grows to ${roundedChange(childAhcLast.baseline_rate_pct, childAhcLast.reform_rate_pct)} percentage points (${((childAhcLast.reform_count - childAhcLast.baseline_count) / 1e6).toFixed(1)}m additional children).`}
             </p>
           )}
+
+          <p className="methodology-note">
+            <strong>Note on baseline poverty rates:</strong> Our baseline
+            absolute child poverty rate before housing costs (BHC) is lower than
+            the{" "}
+            <a
+              href="https://www.gov.uk/government/publications/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              DWP's official figure
+            </a>
+            . This gap arises because our modelled incomes are higher than the
+            DWP's at the bottom of the distribution, and as the absolute poverty
+            line falls in this part of the income scale, even a modest
+            overestimation moves a large share of children above the threshold.
+            Similarly, the{" "}
+            <a
+              href="https://www.resolutionfoundation.org/app/uploads/2018/07/Living-Standards-Audit-2018-3.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Resolution Foundation's Living Standards Audit 2018
+            </a>{" "}
+            (p. 84) found their adjusted child poverty estimates to be around 6
+            percentage points below the DWP's official figures.
+          </p>
         </section>
       )}
 

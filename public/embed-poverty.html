@@ -17,6 +17,14 @@ p{margin:16px 0}
 .toggle-btn{padding:8px 20px;border:none;background:transparent;font-size:13px;font-weight:500;color:#6B7280;cursor:pointer;border-radius:6px;transition:all .2s}
 .toggle-btn:hover{background:#e5e7eb}
 .toggle-btn.active{background:#6B7280;color:#fff}
+.note-toggle{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#6B7280;font-size:14px;cursor:pointer;padding:4px 0;font-family:inherit}
+.note-toggle:hover{color:#333}
+.note-toggle .arrow{display:inline-block;transition:transform .2s;font-size:10px}
+.note-toggle .arrow.open{transform:rotate(90deg)}
+.note-body{overflow:hidden;max-height:0;transition:max-height .3s ease;font-size:14px;color:#6B7280;line-height:1.6}
+.note-body.open{max-height:600px}
+.note-body p{margin:8px 0;font-size:14px}
+.note-body a{color:#4B5563;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -67,9 +75,18 @@ fetch('./data/poverty.csv')
       html+=`</p>`;
     }
 
+    // Expandable methodology note
+    html+=`<div style="margin-top:12px">`;
+    html+=`<button class="note-toggle" id="noteToggle"><span class="arrow" id="noteArrow">&#9654;</span> Note on baseline poverty rates</button>`;
+    html+=`<div class="note-body" id="noteBody">`;
+    html+=`<p>Our baseline absolute child poverty rate before housing costs (BHC) is lower than the <a href="https://www.gov.uk/government/publications/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026" target="_blank" rel="noopener noreferrer">DWP\u2019s official figure</a>. This gap arises because our modelled incomes are higher than the DWP\u2019s at the bottom of the distribution, and as the absolute poverty line falls in this part of the income scale, even a modest overestimation moves a large share of children above the threshold. Similarly, the <a href="https://www.resolutionfoundation.org/app/uploads/2018/07/Living-Standards-Audit-2018-3.pdf" target="_blank" rel="noopener noreferrer">Resolution Foundation\u2019s Living Standards Audit 2018</a> (p.\u00a084) found their adjusted child poverty estimates to be around 6 percentage points below the DWP\u2019s official figures.</p>`;
+    html+=`</div></div>`;
+
     document.getElementById('content').innerHTML=html;
     document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{selYear=b.dataset.year;render()});
     document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{selType=b.dataset.type;render()});
+    const noteToggle=document.getElementById('noteToggle');
+    if(noteToggle) noteToggle.onclick=()=>{document.getElementById('noteBody').classList.toggle('open');document.getElementById('noteArrow').classList.toggle('open')};
   }
   render();
 });
