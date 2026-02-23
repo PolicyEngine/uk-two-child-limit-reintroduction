@@ -316,6 +316,24 @@ html {
   color: #1a1a1a;
 }
 
+.methodology-note {
+  font-size: 0.875rem;
+  color: #6B7280;
+  line-height: 1.6;
+  margin: 16px 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.methodology-note strong {
+  color: #4B5563;
+}
+
+.methodology-note a {
+  color: #4B5563;
+  text-decoration: underline;
+}
+
 /* Charts */
 .narrative-chart-container {
   margin: 24px -32px;
