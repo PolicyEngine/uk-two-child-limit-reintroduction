@@ -11,15 +11,14 @@ th{font-weight:600;color:#333}
 tr:nth-child(even){background:#f9fafb}
 .caption{font-weight:600;margin-top:16px;margin-bottom:4px}
 p{margin:16px 0}
+a{color:#319795;text-decoration:none}
+a:hover{text-decoration:underline}
 .neg{color:#DC2626;font-weight:600}
 .toggle-row{display:flex;justify-content:center;gap:16px;margin-bottom:12px}
 .toggle-group{display:flex;background:#f3f4f6;border-radius:8px;padding:3px}
 .toggle-btn{padding:8px 20px;border:none;background:transparent;font-size:13px;font-weight:500;color:#6B7280;cursor:pointer;border-radius:6px;transition:all .2s}
 .toggle-btn:hover{background:#e5e7eb}
 .toggle-btn.active{background:#6B7280;color:#fff}
-.methodology-note{font-size:14px;color:#6B7280;line-height:1.6;margin:16px 0;white-space:normal;overflow-wrap:break-word;word-wrap:break-word}
-.methodology-note strong{color:#4B5563}
-.methodology-note a{color:#4B5563;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -71,7 +70,7 @@ fetch('./data/poverty.csv')
     }
 
     // Methodology note
-    html+=`<p class="methodology-note"><strong>Note on baseline poverty rates:</strong> Our baseline absolute child poverty rate before housing costs (BHC) is lower than the <a href="https://www.gov.uk/government/publications/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026" target="_blank" rel="noopener noreferrer">DWP\u2019s official figure</a>. This gap arises because our modelled incomes are higher than the DWP\u2019s at the bottom of the distribution, and as the absolute poverty line falls in this part of the income scale, even a modest overestimation moves a large share of children above the threshold. Similarly, the <a href="https://www.resolutionfoundation.org/app/uploads/2018/07/Living-Standards-Audit-2018-3.pdf" target="_blank" rel="noopener noreferrer">Resolution Foundation\u2019s Living Standards Audit 2018</a> (p.\u00a084) found their adjusted child poverty estimates to be around 6 percentage points below the DWP\u2019s official figures.</p>`;
+    html+=`<p><strong>Note on baseline poverty rates:</strong> Our baseline absolute child poverty rate before housing costs (BHC) is lower than the <a href="https://www.gov.uk/government/publications/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026/low-income-poverty-projections-for-children-fye-2025-to-fye-2031-february-2026" target="_blank" rel="noopener noreferrer">DWP\u2019s official figure</a>. This gap arises because our modelled incomes are higher than the DWP\u2019s at the bottom of the distribution, and as the absolute poverty line falls in this part of the income scale, even a modest overestimation moves a large share of children above the threshold. Similarly, the <a href="https://www.resolutionfoundation.org/app/uploads/2018/07/Living-Standards-Audit-2018-3.pdf" target="_blank" rel="noopener noreferrer">Resolution Foundation\u2019s Living Standards Audit 2018</a> (p.\u00a084) found their adjusted child poverty estimates to be around 6 percentage points below the DWP\u2019s official figures.</p>`;
 
     document.getElementById('content').innerHTML=html;
     document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{selYear=b.dataset.year;render()});
