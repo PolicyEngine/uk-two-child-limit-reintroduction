@@ -21,7 +21,7 @@ fetch('./data/budgetary.csv')
 .then(csv=>{
   const rows=csv.trim().split('\n').slice(1).map(l=>{const[y,v]=l.split(',');return{year:y,val:parseFloat(v)}});
   const r0=rows[0],r1=rows[1];
-  let html=`<p>PolicyEngine estimates that restoring the two-child limit would save the government £${r0.val.toFixed(1)} billion in ${r0.year} and £${r1.val.toFixed(1)} billion in ${r1.year}.</p>`;
+  let html=`<p>PolicyEngine estimates that reintroducing the two-child limit would save the government £${r0.val.toFixed(1)} billion in ${r0.year} and £${r1.val.toFixed(1)} billion in ${r1.year}.</p>`;
   document.getElementById('content').innerHTML=html;
 });
 </script>

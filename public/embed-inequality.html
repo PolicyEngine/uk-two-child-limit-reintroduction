@@ -25,8 +25,8 @@ fetch('./data/inequality.csv')
 
   const same=fmt(r0.change)===fmt(r1.change);
   let html;
-  if(same){html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${r1.year}.</p>`}
-  else{html=`<p>Restoring the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${fmt(r1.change)}% in ${r1.year}.</p>`}
+  if(same){html=`<p>Reintroducing the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${r1.year}.</p>`}
+  else{html=`<p>Reintroducing the two-child limit would increase income inequality. The Gini index would rise by ${fmt(r0.change)}% in ${r0.year} and ${fmt(r1.change)}% in ${r1.year}.</p>`}
   document.getElementById('content').innerHTML=html;
 });
 </script>

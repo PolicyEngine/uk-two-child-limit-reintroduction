@@ -157,7 +157,7 @@ export default function TwoChildLimitDashboard() {
     return (
       <div className="narrative-container">
         <header className="narrative-hero">
-          <h1>Restoring the two-child benefit limit</h1>
+          <h1>Reintroducing the two-child benefit limit</h1>
         </header>
         <p className="api-loading">Loading data…</p>
       </div>
@@ -227,7 +227,7 @@ export default function TwoChildLimitDashboard() {
     <div className="narrative-container">
       {/* Hero Section */}
       <header className="narrative-hero">
-        <h1>Restoring the two-child benefit limit</h1>
+        <h1>Reintroducing the two-child benefit limit</h1>
       </header>
 
       {/* Introduction */}
@@ -239,10 +239,10 @@ export default function TwoChildLimitDashboard() {
             announced
           </a>{" "}
           on 18 February 2026 that Reform UK would restore the two-child benefit
-          cap, citing an estimated cost of around £3 billion a year by 2029. The
-          cap, originally introduced in 2017, limits Universal Credit and Child
+          limit, citing an estimated cost of around £3 billion a year by 2029. The
+          limit, introduced in 2017, restricts Universal Credit and Child
           Tax Credit child elements to a family's first two children born after
-          April 2017. Chancellor Rachel Reeves removed the cap from April 2026
+          April 2017. Chancellor Rachel Reeves removed the limit from April 2026
           as part of the{" "}
           <a href="https://www.policyengine.org/uk/autumn-budget-2025">
             Autumn Budget 2025
@@ -254,7 +254,7 @@ export default function TwoChildLimitDashboard() {
           <a href="https://gist.github.com/vahid-ahmadi/e1910e3120bbae130584dfcf221ec461">
             examine
           </a>{" "}
-          the impact of restoring the two-child limit on government spending,
+          the impact of reintroducing the two-child limit on government spending,
           income distribution, poverty rates, income inequality, and geographic
           variation across parliamentary constituencies.
         </p>
@@ -272,7 +272,7 @@ export default function TwoChildLimitDashboard() {
           <a href="https://gist.github.com/vahid-ahmadi/e1910e3120bbae130584dfcf221ec461">
             estimates
           </a>{" "}
-          that restoring the two-child limit would save the government{" "}
+          that reintroducing the two-child limit would save the government{" "}
           {budgetSummary}.
         </p>
         <p className="table-caption">Budgetary impact</p>
@@ -310,7 +310,7 @@ export default function TwoChildLimitDashboard() {
             {fmtPct(h0.pct_children_affected)} of all children) in {h0.year}.
             Affected children are those beyond the second child in each
             household — the ones who directly lose benefit entitlement under
-            the cap.
+            the limit.
           </p>
           <p className="table-caption">
             Table 1: Affected households and children
@@ -349,7 +349,7 @@ export default function TwoChildLimitDashboard() {
         >
           <h2>Distributional impact</h2>
           <p>
-            By income decile, restoring the two-child limit would cause the
+            By income decile, reintroducing the two-child limit would cause the
             largest income losses for the {ordinal(worstDecile.decile)} decile.
             In relative terms, the {ordinal(worstDecile.decile)} decile loses{" "}
             {fmtPct(Math.abs(worstDecile.relative_change_pct))} of household
@@ -378,7 +378,7 @@ export default function TwoChildLimitDashboard() {
             benefits — Universal Credit and Child Tax Credit — which are
             tapered away as household income rises. Households in the upper
             deciles receive none of these benefits, so reintroducing
-            the cap does not affect them.
+            the limit does not affect them.
             {worstDecileLast && years.length > 1 && (
               <>
                 {" "}
@@ -403,7 +403,7 @@ export default function TwoChildLimitDashboard() {
         >
           <h2>Poverty impact</h2>
           <p>
-            Restoring the two-child limit would increase poverty rates,
+            Reintroducing the two-child limit would increase poverty rates,
             with the largest effect on children. We measure poverty both before
             housing costs (BHC) and after housing costs (AHC).
           </p>
@@ -529,7 +529,7 @@ export default function TwoChildLimitDashboard() {
         >
           <h2>Inequality impact</h2>
           <p>
-            Restoring the two-child limit would increase income inequality. The
+            Reintroducing the two-child limit would increase income inequality. The
             Gini index would rise by {ineqSummary}.
           </p>
 
@@ -572,7 +572,7 @@ export default function TwoChildLimitDashboard() {
       >
         <h2>Constituency impact</h2>
         <p>
-          The impact of restoring the two-child limit varies across
+          The impact of reintroducing the two-child limit varies across
           parliamentary constituencies, as shown in Figure 2.
         </p>
 
@@ -633,7 +633,7 @@ export default function TwoChildLimitDashboard() {
       >
         <h2>Conclusion</h2>
         <p>
-          PolicyEngine estimates that restoring the two-child benefit cap would
+          PolicyEngine estimates that reintroducing the two-child benefit limit would
           save the government {fmtBnLong(b0.budgetary_impact_bn)} in {b0.year}
           {h0 && (
             <>
